@@ -1,12 +1,64 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import SkillCard from '../components/SkillCard';
+import { getAuthUser } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/services/auth.service';
+import { User } from '@/lib/types';
 
 export default function App() {
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadUser() {
+      // Tentar obter do localStorage primeiro (mais rápido)
+      const cachedUser = getAuthUser();
+      if (cachedUser) {
+        setUser(cachedUser);
+        setIsLoading(false);
+      }
+
+      // Buscar do backend para garantir dados atualizados
+      try {
+        const currentUser = await getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+        } else {
+          // Se não conseguir obter usuário, redirecionar para login
+          router.push('/auth/login');
+        }
+      } catch (error) {
+        console.error('Error loading user:', error);
+        router.push('/auth/login');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadUser();
+  }, [router]);
+
+  if (isLoading) {
+    return (
+      <div className="dashboard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Redirecionamento será feito pelo useEffect
+  }
+
   return (
     <div className="dashboard">
 
       <section className='top-section'>
         <div className="greeting-section">
-          <h1 className="greeting-title">Olá, Estudante! 👋</h1>
+          <h1 className="greeting-title">Olá, {user.nome}! 👋</h1>
           <p className="greeting-subtitle">Bem-vindo de volta! </p>
         </div>
 

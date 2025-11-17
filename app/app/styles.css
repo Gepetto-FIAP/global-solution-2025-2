@@ -526,7 +526,7 @@ body {
 }
 
 .progress-bar-container {
- 
+  width: 100%;
 }
 
 .progress-bar-track {

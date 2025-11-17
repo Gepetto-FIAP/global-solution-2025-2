@@ -16,7 +16,7 @@ CREATE TABLE USUARIO (
     id_usuario NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nome VARCHAR2(100) NOT NULL,
     email VARCHAR2(100) NOT NULL,
-    tipo VARCHAR2(20) NOT NULL CHECK (tipo IN ('Estudante', 'Profissional', 'Empresa')),
+    password_hash VARCHAR2(255) NOT NULL,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uk_usuario_email UNIQUE (email)
 );
@@ -67,16 +67,18 @@ CREATE INDEX idx_curso_nome ON CURSO(nome);
 -- =====================================================
 
 -- Inserir usuários de exemplo
-INSERT INTO USUARIO (nome, email, tipo) VALUES
-('João Silva', 'joao@email.com', 'Estudante');
-INSERT INTO USUARIO (nome, email, tipo) VALUES
-('Maria Santos', 'maria@empresa.com', 'Profissional');
-INSERT INTO USUARIO (nome, email, tipo) VALUES
-('Tech Solutions Ltda', 'contato@techsolutions.com', 'Empresa');
-INSERT INTO USUARIO (nome, email, tipo) VALUES
-('Ana Costa', 'ana.costa@email.com', 'Profissional');
-INSERT INTO USUARIO (nome, email, tipo) VALUES
-('Instituto de Tecnologia', 'contato@institutotech.edu.br', 'Empresa');
+-- Nota: Os password_hash abaixo são apenas exemplos. Em produção, use bcrypt no backend Java
+-- Hash de exemplo para senha "senha123": $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+INSERT INTO USUARIO (nome, email, password_hash) VALUES
+('João Silva', 'joao@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+INSERT INTO USUARIO (nome, email, password_hash) VALUES
+('Maria Santos', 'maria@empresa.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+INSERT INTO USUARIO (nome, email, password_hash) VALUES
+('Tech Solutions Ltda', 'contato@techsolutions.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+INSERT INTO USUARIO (nome, email, password_hash) VALUES
+('Ana Costa', 'ana.costa@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+INSERT INTO USUARIO (nome, email, password_hash) VALUES
+('Instituto de Tecnologia', 'contato@institutotech.edu.br', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
 
 -- Inserir habilidades de exemplo
 INSERT INTO HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
