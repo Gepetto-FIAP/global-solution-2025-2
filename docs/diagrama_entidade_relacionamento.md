@@ -51,13 +51,17 @@ Sistema para cadastro de habilidades e sugestão de cursos da Alura relacionados
 **Descrição:** Representa usuários do sistema que podem cadastrar habilidades e visualizar cursos sugeridos.
 
 **Atributos:**
-- `id_usuario` (PK) - INT, AUTO_INCREMENT, NOT NULL
-- `nome` - VARCHAR(100), NOT NULL
-- `email` - VARCHAR(100), NOT NULL, UNIQUE
-- `tipo` - ENUM('Estudante', 'Profissional', 'Empresa'), NOT NULL
-- `data_cadastro` - DATETIME, NOT NULL, DEFAULT CURRENT_TIMESTAMP
+- `id_usuario` (PK) - NUMBER, GENERATED ALWAYS AS IDENTITY, NOT NULL
+- `nome` - VARCHAR2(100), NOT NULL
+- `email` - VARCHAR2(100), NOT NULL, UNIQUE
+- `password_hash` - VARCHAR2(255), NOT NULL
+- `data_cadastro` - TIMESTAMP, DEFAULT CURRENT_TIMESTAMP, NOT NULL
 
 **Chave Primária:** id_usuario
+
+**Observações:**
+- `password_hash`: Senha armazenada com hash bcrypt (implementado no backend Java)
+- O hash bcrypt garante segurança, armazenando apenas o hash e nunca a senha em texto plano
 
 ---
 
@@ -88,7 +92,7 @@ Sistema para cadastro de habilidades e sugestão de cursos da Alura relacionados
 │ id_usuario (PK)     │
 │ nome                │
 │ email               │
-│ tipo                │
+│ password_hash       │
 │ data_cadastro       │
 └──────────┬──────────┘
            │
@@ -160,7 +164,7 @@ CREATE TABLE USUARIO (
     id_usuario NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nome VARCHAR2(100) NOT NULL,
     email VARCHAR2(100) NOT NULL,
-    tipo VARCHAR2(20) NOT NULL CHECK (tipo IN ('Estudante', 'Profissional', 'Empresa')),
+    password_hash VARCHAR2(255) NOT NULL,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uk_usuario_email UNIQUE (email)
 );
