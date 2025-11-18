@@ -1,33 +1,39 @@
 #!/bin/bash
 
-# Script para executar o backend Spring Boot com variáveis de ambiente
+# Script simples para executar a aplicação
 
-# Navegar para o diretório do backend
-cd "$(dirname "$0")"
-
-# Carregar variáveis de ambiente do .env.local (se existir)
-if [ -f "../.env.local" ]; then
-    echo "Carregando variáveis de ambiente de ../.env.local"
-    export $(grep -v '^#' ../.env.local | grep -v '^$' | xargs)
-fi
-
-# Verificar se as variáveis necessárias estão definidas
-if [ -z "$ORACLE_USER" ] || [ -z "$ORACLE_PASSWORD" ] || [ -z "$ORACLE_CONNECT_STRING" ]; then
-    echo "ERRO: Variáveis de ambiente não encontradas!"
-    echo "Por favor, configure as seguintes variáveis:"
-    echo "  - ORACLE_USER"
-    echo "  - ORACLE_PASSWORD"
-    echo "  - ORACLE_CONNECT_STRING"
-    echo ""
-    echo "Você pode exportá-las manualmente ou criar um arquivo ../.env.local"
-    exit 1
-fi
-
-echo "Variáveis de ambiente configuradas:"
-echo "  ORACLE_USER: $ORACLE_USER"
-echo "  ORACLE_CONNECT_STRING: $ORACLE_CONNECT_STRING"
+echo "=========================================="
+echo "Catálogo de Habilidades API"
+echo "=========================================="
 echo ""
 
-# Executar o Spring Boot
-mvn spring-boot:run
+# Carregar variáveis de ambiente do .env.local
+ENV_FILE="../.env.local"
+if [ -f "$ENV_FILE" ]; then
+    echo "📋 Carregando variáveis de ambiente de $ENV_FILE..."
+    # Carregar variáveis do arquivo .env.local
+    export $(grep -E '^(ORACLE_USER|ORACLE_PASSWORD|ORACLE_CONNECT_STRING|JWT_SECRET|JWT_EXPIRATION)=' "$ENV_FILE" | grep -v '^#' | xargs)
+    echo "  ✓ Variáveis carregadas"
+    echo ""
+else
+    echo "⚠️  Arquivo .env.local não encontrado em $ENV_FILE"
+    echo "   Usando valores padrão ou variáveis de ambiente do sistema"
+    echo ""
+fi
 
+# Compilar se necessário
+if [ ! -f "target/habilidades-api.jar" ]; then
+    echo "📦 Compilando projeto..."
+    mvn clean package -DskipTests
+    echo ""
+fi
+
+# Executar
+echo "🚀 Iniciando servidor..."
+echo "Servidor: http://localhost:8080"
+echo "API: http://localhost:8080/api"
+echo ""
+echo "Pressione Ctrl+C para encerrar"
+echo ""
+
+java -jar target/habilidades-api.jar

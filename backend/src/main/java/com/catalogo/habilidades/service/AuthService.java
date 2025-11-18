@@ -7,28 +7,18 @@ import com.catalogo.habilidades.dto.UserResponse;
 import com.catalogo.habilidades.model.Usuario;
 import com.catalogo.habilidades.repository.UsuarioRepository;
 import com.catalogo.habilidades.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Optional;
 
-@Service
 public class AuthService {
     
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    
-    @Autowired
-    private JwtUtil jwtUtil;
-    
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+    private final UsuarioRepository usuarioRepository = new UsuarioRepository();
+    private final JwtUtil jwtUtil = new JwtUtil();
     
     /**
      * Registra um novo usuário
      */
-    @Transactional
     public AuthResponse register(RegisterRequest request) {
         // Verificar se email já existe
         if (usuarioRepository.existsByEmail(request.getEmail())) {
@@ -36,7 +26,7 @@ public class AuthService {
         }
         
         // Criar hash da senha
-        String passwordHash = passwordEncoder.encode(request.getPassword());
+        String passwordHash = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt(10));
         
         // Criar novo usuário
         Usuario usuario = new Usuario(
@@ -82,7 +72,7 @@ public class AuthService {
         Usuario usuario = usuarioOpt.get();
         
         // Verificar senha
-        if (!passwordEncoder.matches(request.getPassword(), usuario.getPasswordHash())) {
+        if (!BCrypt.checkpw(request.getPassword(), usuario.getPasswordHash())) {
             return AuthResponse.error("Email ou senha incorretos");
         }
         

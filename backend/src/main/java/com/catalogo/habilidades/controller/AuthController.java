@@ -6,81 +6,84 @@ import com.catalogo.habilidades.dto.RegisterRequest;
 import com.catalogo.habilidades.dto.UserResponse;
 import com.catalogo.habilidades.security.JwtUtil;
 import com.catalogo.habilidades.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-@RestController
-@RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@Path("/auth")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AuthController {
     
-    @Autowired
-    private AuthService authService;
-    
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final AuthService authService = new AuthService();
+    private final JwtUtil jwtUtil = new JwtUtil();
     
     /**
      * Registra um novo usuário
      */
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    @POST
+    @Path("/register")
+    public Response register(@Valid RegisterRequest request) {
         AuthResponse response = authService.register(request);
         
         if (response.isSuccess()) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return Response.status(Response.Status.CREATED).entity(response).build();
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
         }
     }
     
     /**
      * Realiza login do usuário
      */
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    @POST
+    @Path("/login")
+    public Response login(@Valid LoginRequest request) {
         AuthResponse response = authService.login(request);
         
         if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
+            return Response.ok(response).build();
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
         }
     }
     
     /**
      * Realiza logout (opcional)
      */
-    @PostMapping("/logout")
-    public ResponseEntity<AuthResponse> logout() {
+    @POST
+    @Path("/logout")
+    public Response logout() {
         // Logout pode ser feito apenas removendo o token no frontend
         // Este endpoint é opcional e pode invalidar o token no backend se necessário
-        return ResponseEntity.ok(AuthResponse.success("Logout realizado com sucesso", null, null));
+        return Response.ok(AuthResponse.success("Logout realizado com sucesso", null, null)).build();
     }
     
     /**
      * Retorna dados do usuário autenticado atual
      */
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+    @GET
+    @Path("/me")
+    public Response getCurrentUser(@Context HttpHeaders headers) {
         // Extrair token do header
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = headers.getHeaderString("Authorization");
         
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(AuthResponse.error("Token não fornecido"));
+            return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(AuthResponse.error("Token não fornecido"))
+                .build();
         }
         
         String token = authHeader.substring(7);
         
         // Validar token
         if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(AuthResponse.error("Token inválido ou expirado"));
+            return Response.status(Response.Status.UNAUTHORIZED)
+                .entity(AuthResponse.error("Token inválido ou expirado"))
+                .build();
         }
         
         // Extrair userId do token
@@ -92,10 +95,11 @@ public class AuthController {
                 AuthResponse response = new AuthResponse();
                 response.setSuccess(true);
                 response.setUser(user);
-                return ResponseEntity.ok(response);
+                return Response.ok(response).build();
             })
-            .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(AuthResponse.error("Usuário não encontrado")));
+            .orElse(Response.status(Response.Status.NOT_FOUND)
+                .entity(AuthResponse.error("Usuário não encontrado"))
+                .build());
     }
 }
 
