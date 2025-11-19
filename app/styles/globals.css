@@ -1,0 +1,152 @@
+/* ========================================
+   VARIÁVEIS - Paleta Alura Dark Theme
+   ======================================== */
+:root {
+  /* Cores principais da Alura */
+  --alura-dark: #00021D;
+  --alura-darker: #020B16;
+  --alura-blue: #01cafd;
+  --alura-green: #00C86F;
+  --alura-purple: #9C27B0;
+  --alura-orange: #FF6B00;
+  
+  /* Cores neutras - Dark Theme */
+  --bg: #030303;
+  --bg-secondary: #0F1E31;
+  --surface: #162840;
+  --surface-hover: #1E3451;
+  --text: #E8EAED;
+  --text-secondary: #7FBAF4;
+  --border: #012640;
+  
+  /* Dimensões */
+  --header-height: 72px;
+  --sidebar-width: 280px;
+  --radius: 12px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  font-family: 'Play', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif !important;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+* {
+  font-family: 'Play', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif !important;
+}
+
+/* ========================================
+   COURSE EDITING STYLES
+   ======================================== */
+.course-item.editing {
+  background: var(--surface-hover);
+  border-color: var(--alura-blue);
+}
+
+.course-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.course-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.course-input:focus {
+  outline: none;
+  border-color: var(--alura-blue);
+  box-shadow: 0 0 0 3px rgba(1, 202, 253, 0.1);
+}
+
+.course-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.course-input-small {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.course-input-small:focus {
+  outline: none;
+  border-color: var(--alura-blue);
+  box-shadow: 0 0 0 3px rgba(1, 202, 253, 0.1);
+}
+
+.course-link {
+  color: var(--alura-blue);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.course-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+.course-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-icon {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+  padding: 0;
+}
+
+.btn-icon:hover {
+  background: var(--surface-hover);
+  border-color: var(--alura-blue);
+  transform: scale(1.05);
+}
+
+.btn-icon.btn-delete:hover {
+  background: rgba(255, 0, 0, 0.1);
+  border-color: #ff4444;
+}

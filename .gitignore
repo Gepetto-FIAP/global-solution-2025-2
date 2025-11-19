@@ -1,6 +1,17 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ==========================================
+# Arquivos PDF e Documentos Sensíveis
+# ==========================================
+*.pdf
+*.docx
+*.doc
+2ESOA - Global Solution 2025.pdf
+2ESO - Fase 07 - Cap10 - Estudo de API.docx_RevFinal.pdf
+
+# ==========================================
+# Dependências Node.js
+# ==========================================
 /node_modules
 /.pnp
 .pnp.*
@@ -9,33 +20,174 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+# package-lock.json deve ser versionado para builds reproduzíveis
+yarn.lock
+pnpm-lock.yaml
 
-# testing
-/coverage
-
-# next.js
+# ==========================================
+# Next.js
+# ==========================================
 /.next/
 /out/
+next-env.d.ts
+*.tsbuildinfo
 
-# production
+# ==========================================
+# Build e Produção
+# ==========================================
 /build
+/dist
+*.log
 
-# misc
-.DS_Store
+# ==========================================
+# Variáveis de Ambiente e Secrets
+# ==========================================
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.key
 *.pem
+*.cert
+secrets/
+.secrets
 
-# debug
+# ==========================================
+# Java / Maven
+# ==========================================
+# Maven
+**/target/
+**/pom.xml.tag
+**/pom.xml.releaseBackup
+**/pom.xml.versionsBackup
+**/pom.xml.next
+**/release.properties
+**/dependency-reduced-pom.xml
+**/buildNumber.properties
+**/.mvn/timing.properties
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ==========================================
+# IDEs e Editores
+# ==========================================
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+*.launch
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ==========================================
+# Sistema Operacional
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ==========================================
+# Testing e Coverage
+# ==========================================
+/coverage
+/.nyc_output
+*.lcov
+.coverage
+htmlcov/
+.pytest_cache/
+
+# ==========================================
+# Debug e Logs
+# ==========================================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
+*.log
+logs/
+*.log.*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ==========================================
+# Temporários e Cache
+# ==========================================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.cache/
+.parcel-cache/
+.turbo/
 
-# vercel
+# ==========================================
+# Deploy e Cloud
+# ==========================================
 .vercel
+.netlify
+.firebase/
+.firebaserc
+firebase.json
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# ==========================================
+# Outros
+# ==========================================
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swo
+*.swp
