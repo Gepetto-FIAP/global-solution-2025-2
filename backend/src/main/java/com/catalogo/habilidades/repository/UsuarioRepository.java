@@ -13,7 +13,7 @@ public class UsuarioRepository {
      * Busca um usuário por ID
      */
     public Optional<Usuario> findById(Long id) {
-        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM USUARIO WHERE id_usuario = ?";
+        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM GS_USUARIO WHERE id_usuario = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -36,7 +36,7 @@ public class UsuarioRepository {
      * Busca um usuário por email
      */
     public Optional<Usuario> findByEmail(String email) {
-        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM USUARIO WHERE LOWER(email) = ?";
+        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM GS_USUARIO WHERE LOWER(email) = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -74,7 +74,7 @@ public class UsuarioRepository {
     }
     
     private Usuario insert(Usuario usuario) {
-        String sql = "INSERT INTO USUARIO (nome, email, password_hash, data_cadastro) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO GS_USUARIO (nome, email, password_hash, data_cadastro) VALUES (?, ?, ?, ?)";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, new String[]{"id_usuario"})) {
@@ -101,7 +101,7 @@ public class UsuarioRepository {
     }
     
     private Usuario update(Usuario usuario) {
-        String sql = "UPDATE USUARIO SET nome = ?, email = ?, password_hash = ? WHERE id_usuario = ?";
+        String sql = "UPDATE GS_USUARIO SET nome = ?, email = ?, password_hash = ? WHERE id_usuario = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

@@ -46,8 +46,18 @@ public class PersistenceConfig {
             config.setMaxLifetime(1800000);
             
             dataSource = new HikariDataSource(config);
+            
+            // Testar conexão
+            System.out.println("✓ DataSource inicializado com sucesso");
+            System.out.println("  JDBC URL: " + config.getJdbcUrl());
+            System.out.println("  User: " + config.getUsername());
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao inicializar DataSource", e);
+            System.err.println("✗ Erro ao inicializar DataSource:");
+            System.err.println("  Mensagem: " + e.getMessage());
+            System.err.println("  ORACLE_CONNECT_STRING: " + System.getenv("ORACLE_CONNECT_STRING"));
+            System.err.println("  ORACLE_USER: " + System.getenv("ORACLE_USER"));
+            e.printStackTrace();
+            throw new RuntimeException("Erro ao inicializar DataSource: " + e.getMessage(), e);
         }
     }
     

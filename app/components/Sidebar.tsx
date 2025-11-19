@@ -1,56 +1,51 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function Sidebar() {
-  const [activeFilter, setActiveFilter] = useState('todas');
+  const [activeCategory, setActiveCategory] = useState('todas');
 
   const categories = [
-    { id: 'todas', label: 'Todas as Habilidades', icon: '📚', count: 48 },
-    { id: 'tecnologia', label: 'Tecnologia', icon: '💻', count: 15 },
-    { id: 'dados', label: 'Análise de Dados', icon: '📊', count: 8 },
-    { id: 'ia', label: 'Inteligência Artificial', icon: '🤖', count: 10 },
-    { id: 'gestao', label: 'Gestão', icon: '📈', count: 7 },
-    { id: 'comunicacao', label: 'Comunicação', icon: '💬', count: 8 },
+    { id: 'todas', label: 'Todas', icon: '📚', count: 48, color: '#167BF7' },
+    { id: 'tecnologia', label: 'Tecnologia', icon: '💻', count: 15, color: '#00C86F' },
+    { id: 'design', label: 'Design', icon: '🎨', count: 12, color: '#9C27B0' },
+    { id: 'negocios', label: 'Negócios', icon: '📈', count: 14, color: '#FF6B00' },
+    { id: 'softskills', label: 'Soft Skills', icon: '💬', count: 11, color: '#01cafd' },
   ];
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h3>Categorias</h3>
+        <h3 className="sidebar-title">Categorias</h3>
+        <p className="sidebar-subtitle">Explore por área</p>
       </div>
-      <nav className="sidebar-nav" style={{display: 'none'}}>
+      
+      <nav className="sidebar-nav">
         {categories.map((category) => (
           <button
             key={category.id}
-            className={`sidebar-item ${activeFilter === category.id ? 'active' : ''}`}
-            onClick={() => setActiveFilter(category.id)}
+            className={`sidebar-item ${activeCategory === category.id ? 'active' : ''}`}
+            onClick={() => setActiveCategory(category.id)}
           >
-            <span className="item-icon">{category.icon}</span>
+            <span 
+              className="item-icon" 
+              style={{ backgroundColor: `${category.color}20` }}
+            >
+              {category.icon}
+            </span>
             <span className="item-label">{category.label}</span>
-            <span className="item-count">{category.count}</span>
+            <span 
+              className="item-count"
+              style={{ backgroundColor: `${category.color}20`, color: category.color }}
+            >
+              {category.count}
+            </span>
           </button>
         ))}
       </nav>
-      <div className="sidebar-footer" style={{display: 'none'}}>
-        <div className="progress-widget">
-          <h4>Seu Progresso</h4>
-          <div className="progress-stats">
-            <div className="stat">
-              <span className="stat-value">12</span>
-              <span className="stat-label">Concluídas</span>
-            </div>
-            <div className="stat">
-              <span className="stat-value">8</span>
-              <span className="stat-label">Em progresso</span>
-            </div>
-          </div>
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: '65%' }}></div>
-          </div>
-          <p className="progress-text">65% do seu objetivo</p>
-        </div>
-      </div>
+
+
     </aside>
   );
 }
