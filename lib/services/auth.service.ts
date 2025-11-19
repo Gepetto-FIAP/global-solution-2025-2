@@ -12,7 +12,7 @@ import { setAuthToken, removeAuthToken, getAuthToken, setAuthUser } from '../aut
  */
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const loginData: LoginData = { email, password };
-  const response = await apiPost<AuthResponse>('/api/auth/login', loginData);
+  const response = await apiPost<AuthResponse>('/auth/login', loginData);
 
   if (response.success && response.data) {
     const authResponse = response.data as AuthResponse;
@@ -46,7 +46,7 @@ export async function register(
   password: string
 ): Promise<AuthResponse> {
   const registerData: RegisterData = { nome, email, password };
-  const response = await apiPost<AuthResponse>('/api/auth/register', registerData);
+  const response = await apiPost<AuthResponse>('/auth/register', registerData);
 
   if (response.success && response.data) {
     const authResponse = response.data as AuthResponse;
@@ -79,7 +79,7 @@ export async function logout(): Promise<{ success: boolean; message: string }> {
   
   if (token) {
     // Chamar API de logout no backend (opcional)
-    await apiPost('/api/auth/logout', {}, token);
+    await apiPost('/auth/logout', {}, token);
   }
   
   // Remover token e dados do usuário do localStorage
@@ -101,7 +101,7 @@ export async function getCurrentUser(): Promise<User | null> {
     return null;
   }
 
-  const response = await apiGet<{ user: User }>('/api/auth/me', token);
+  const response = await apiGet<{ user: User }>('/auth/me', token);
 
   if (response.success && response.data?.user) {
     const user = response.data.user;

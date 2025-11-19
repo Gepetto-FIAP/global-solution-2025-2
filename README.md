@@ -68,7 +68,7 @@ Crie um arquivo `.env.local` na **raiz do projeto**:
 NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
-#### 2.2. Backend (Java Spring Boot)
+#### 2.2. Backend (Java Jakarta EE)
 
 O backend precisa das seguintes variáveis de ambiente. Você pode configurá-las de duas formas:
 
@@ -102,7 +102,7 @@ export JWT_SECRET=sua-chave-secreta-super-forte-altere-em-producao
 
 📖 Para mais detalhes, consulte `docs/ENV_VARIABLES.md`
 
-### 3️⃣ Executar o Backend (Java Spring Boot)
+### 3️⃣ Executar o Backend (Java Jakarta EE)
 
 #### 3.1. Navegar para o diretório do backend
 
@@ -110,22 +110,27 @@ export JWT_SECRET=sua-chave-secreta-super-forte-altere-em-producao
 cd backend
 ```
 
-#### 3.2. Executar usando o script (recomendado)
+#### 3.2. Executar usando os scripts (recomendado)
 
-O script `run.sh` carrega automaticamente as variáveis do `.env.local`:
+Os scripts carregam automaticamente as variáveis do `.env.local`:
 
-```bash
-./run.sh
-```
-
-**Nota:** Se o script não tiver permissão de execução:
-
+**Linux/Mac:**
 ```bash
 chmod +x run.sh
 ./run.sh
 ```
 
-#### 3.3. Executar manualmente com Maven
+**Windows (PowerShell):**
+```powershell
+.\run.ps1
+```
+
+**Nota:** Se você receber erro de política de execução no PowerShell:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+#### 3.3. Executar manualmente
 
 Se preferir executar manualmente:
 
@@ -133,8 +138,8 @@ Se preferir executar manualmente:
 # Certifique-se de que as variáveis de ambiente estão exportadas
 export $(grep -v '^#' ../.env.local | grep -v '^$' | xargs)
 
-# Executar o Spring Boot
-mvn spring-boot:run
+# Executar o JAR
+java -jar target/habilidades-api.jar
 ```
 
 #### 3.4. Verificar se o Backend está rodando
@@ -257,7 +262,7 @@ globalsolution2/
 │   ├── app/                      # Dashboard (protegido)
 │   ├── components/               # Componentes React
 │   └── styles/                   # Estilos globais
-├── backend/                      # Backend Java Spring Boot
+├── backend/                      # Backend Java Jakarta EE
 │   ├── src/main/java/            # Código fonte Java
 │   ├── pom.xml                   # Configuração Maven
 │   └── run.sh                    # Script de execução
@@ -303,9 +308,10 @@ globalsolution2/
 
 ### Backend
 - **Java** 17
-- **Spring Boot** 3.2.0
-- **Spring Data JPA**
-- **Spring Security** (JWT)
+- **Jakarta EE** (JAX-RS)
+- **Jersey** (implementação JAX-RS)
+- **Grizzly HTTP Server** (servidor embutido)
+- **JDBC** com **HikariCP** (connection pool)
 - **Maven**
 
 ### Banco de Dados
@@ -322,8 +328,7 @@ globalsolution2/
 - **API Contracts:** `docs/API_CONTRACTS.md` - Documentação completa dos endpoints REST
 - **Variáveis de Ambiente:** `docs/ENV_VARIABLES.md` - Guia de configuração
 - **Diagrama ER:** `docs/diagrama_entidade_relacionamento.md` - Modelo de dados detalhado
-- **Backend README:** `backend/README.md` - Documentação específica do backend
-- **Instruções Backend:** `backend/INSTRUCOES.md` - Guia passo a passo do backend
+- **Backend README:** `backend/README.md` - Documentação completa do backend (inclui instruções de execução)
 
 ---
 
@@ -381,7 +386,7 @@ globalsolution2/
   - Relacionamento N:M por categoria (HABILIDADE ↔ CURSO)
 - ✅ **Chaves Primárias:** Todas as entidades possuem PK
 - ✅ **Normalização:** Modelo normalizado
-- ✅ **Backend Java REST API:** Implementado com Spring Boot
+- ✅ **Backend Java REST API:** Implementado com Jakarta EE
 - ✅ **Frontend Next.js:** Implementado com React e TypeScript
 - ✅ **Autenticação:** JWT e BCrypt
 
@@ -448,7 +453,8 @@ Este projeto foi desenvolvido para fins acadêmicos.
 ## 📚 Referências
 
 - Documentação Oracle: https://docs.oracle.com/
-- Spring Boot: https://spring.io/projects/spring-boot
+- Jakarta EE: https://jakarta.ee/
+- Jersey: https://eclipse-ee4j.github.io/jersey/
 - Next.js: https://nextjs.org/docs
 - Padrões de Modelagem de Dados
 - Boas Práticas de Banco de Dados Relacionais

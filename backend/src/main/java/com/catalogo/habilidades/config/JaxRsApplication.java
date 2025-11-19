@@ -1,7 +1,11 @@
 package com.catalogo.habilidades.config;
 
 import com.catalogo.habilidades.controller.AuthController;
+import com.catalogo.habilidades.controller.CursoController;
+import com.catalogo.habilidades.controller.DashboardController;
 import com.catalogo.habilidades.controller.GlobalExceptionHandler;
+import com.catalogo.habilidades.controller.HabilidadeController;
+import com.catalogo.habilidades.controller.ProgressoController;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -18,6 +22,10 @@ public class JaxRsApplication extends Application {
         
         // Registrar recursos REST
         classes.add(AuthController.class);
+        classes.add(HabilidadeController.class);
+        classes.add(CursoController.class);
+        classes.add(ProgressoController.class);
+        classes.add(DashboardController.class);
         
         // Registrar providers (filtros, exception mappers, etc.)
         classes.add(CorsFilter.class);

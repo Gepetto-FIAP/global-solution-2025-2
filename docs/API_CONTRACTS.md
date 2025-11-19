@@ -244,31 +244,47 @@ CREATE TABLE USUARIO (
 
 ## Exemplo de Implementação Java
 
-### Dependências Maven/Gradle
+### Dependências Maven
 
 ```xml
-<!-- Spring Boot Web -->
+<!-- Jakarta REST (JAX-RS) -->
 <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
+    <groupId>jakarta.ws.rs</groupId>
+    <artifactId>jakarta.ws.rs-api</artifactId>
+    <version>3.1.0</version>
 </dependency>
 
-<!-- Spring Boot JPA -->
+<!-- Jersey com Grizzly (Servidor embutido) -->
 <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-jpa</artifactId>
+    <groupId>org.glassfish.jersey.containers</groupId>
+    <artifactId>jersey-container-grizzly2-http</artifactId>
+    <version>3.1.3</version>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jersey.media</groupId>
+    <artifactId>jersey-media-json-jackson</artifactId>
+    <version>3.1.3</version>
 </dependency>
 
 <!-- Oracle Database -->
 <dependency>
     <groupId>com.oracle.database.jdbc</groupId>
     <artifactId>ojdbc8</artifactId>
+    <version>23.3.0.23.09</version>
+</dependency>
+
+<!-- HikariCP (Connection Pool) -->
+<dependency>
+    <groupId>com.zaxxer</groupId>
+    <artifactId>HikariCP</artifactId>
+    <version>5.0.1</version>
 </dependency>
 
 <!-- BCrypt -->
 <dependency>
-    <groupId>org.springframework.security</groupId>
-    <artifactId>spring-security-crypto</artifactId>
+    <groupId>org.mindrot</groupId>
+    <artifactId>jbcrypt</artifactId>
+    <version>0.4</version>
 </dependency>
 
 <!-- JWT -->

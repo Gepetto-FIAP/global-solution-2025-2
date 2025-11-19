@@ -13,7 +13,7 @@ public class UsuarioRepository {
      * Busca um usuário por ID
      */
     public Optional<Usuario> findById(Long id) {
-        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM GS_USUARIO WHERE id_usuario = ?";
+        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro, xp_total, meta_cursos_mensal FROM GS_USUARIO WHERE id_usuario = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -36,7 +36,7 @@ public class UsuarioRepository {
      * Busca um usuário por email
      */
     public Optional<Usuario> findByEmail(String email) {
-        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM GS_USUARIO WHERE LOWER(email) = ?";
+        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro, xp_total, meta_cursos_mensal FROM GS_USUARIO WHERE LOWER(email) = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -130,6 +130,18 @@ public class UsuarioRepository {
         if (timestamp != null) {
             usuario.setDataCadastro(timestamp.toLocalDateTime());
         }
+        
+        Integer xpTotal = rs.getInt("xp_total");
+        if (rs.wasNull()) {
+            xpTotal = 0;
+        }
+        usuario.setXpTotal(xpTotal);
+        
+        Integer metaCursosMensal = rs.getInt("meta_cursos_mensal");
+        if (rs.wasNull()) {
+            metaCursosMensal = 10;
+        }
+        usuario.setMetaCursosMensal(metaCursosMensal);
         
         return usuario;
     }

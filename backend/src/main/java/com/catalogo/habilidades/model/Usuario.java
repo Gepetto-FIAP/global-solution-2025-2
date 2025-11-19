@@ -9,10 +9,14 @@ public class Usuario {
     private String email;
     private String passwordHash;
     private LocalDateTime dataCadastro;
+    private Integer xpTotal;
+    private Integer metaCursosMensal;
     
     // Construtores
     public Usuario() {
         this.dataCadastro = LocalDateTime.now();
+        this.xpTotal = 0;
+        this.metaCursosMensal = 10;
     }
     
     public Usuario(String nome, String email, String passwordHash) {
@@ -20,6 +24,8 @@ public class Usuario {
         this.email = email;
         this.passwordHash = passwordHash;
         this.dataCadastro = LocalDateTime.now();
+        this.xpTotal = 0;
+        this.metaCursosMensal = 10;
     }
     
     // Getters e Setters
@@ -61,6 +67,22 @@ public class Usuario {
     
     public void setDataCadastro(LocalDateTime dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+    
+    public Integer getXpTotal() {
+        return xpTotal;
+    }
+    
+    public void setXpTotal(Integer xpTotal) {
+        this.xpTotal = xpTotal;
+    }
+    
+    public Integer getMetaCursosMensal() {
+        return metaCursosMensal;
+    }
+    
+    public void setMetaCursosMensal(Integer metaCursosMensal) {
+        this.metaCursosMensal = metaCursosMensal;
     }
 }
 

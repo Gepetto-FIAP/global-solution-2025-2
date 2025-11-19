@@ -7,6 +7,66 @@
 
 -- Nota: Este script foi adaptado para Oracle Database
 -- Execute como usuário com privilégios adequados (DBA ou usuário com CREATE TABLE)
+--
+-- IMPORTANTE: Este script limpa objetos existentes antes de criar novos
+-- Se você não quiser que isso aconteça, comente a seção de limpeza abaixo
+
+-- =====================================================
+-- LIMPEZA DE OBJETOS EXISTENTES (se necessário)
+-- =====================================================
+-- Descomente a seção abaixo se quiser limpar objetos existentes antes de criar
+
+BEGIN
+    -- Dropar triggers primeiro
+    FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'TRIGGER' AND object_name LIKE 'TRG_%') LOOP
+        BEGIN
+            EXECUTE IMMEDIATE 'DROP TRIGGER ' || cur_rec.object_name;
+        EXCEPTION
+            WHEN OTHERS THEN NULL;
+        END;
+    END LOOP;
+    
+    -- Dropar procedures
+    FOR cur_rec IN (SELECT object_name FROM user_objects WHERE object_type = 'PROCEDURE' AND object_name LIKE 'SP_%') LOOP
+        BEGIN
+            EXECUTE IMMEDIATE 'DROP PROCEDURE ' || cur_rec.object_name;
+        EXCEPTION
+            WHEN OTHERS THEN NULL;
+        END;
+    END LOOP;
+    
+    -- Dropar tabelas (em ordem para respeitar foreign keys)
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE GS_META_MENSAL CASCADE CONSTRAINTS';
+    EXCEPTION
+        WHEN OTHERS THEN NULL;
+    END;
+    
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE GS_USUARIO_CURSO CASCADE CONSTRAINTS';
+    EXCEPTION
+        WHEN OTHERS THEN NULL;
+    END;
+    
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE GS_HABILIDADE CASCADE CONSTRAINTS';
+    EXCEPTION
+        WHEN OTHERS THEN NULL;
+    END;
+    
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE GS_CURSO CASCADE CONSTRAINTS';
+    EXCEPTION
+        WHEN OTHERS THEN NULL;
+    END;
+    
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP TABLE GS_USUARIO CASCADE CONSTRAINTS';
+    EXCEPTION
+        WHEN OTHERS THEN NULL;
+    END;
+END;
+/
 
 -- =====================================================
 -- Tabela: GS_USUARIO
@@ -18,11 +78,13 @@ CREATE TABLE GS_USUARIO (
     email VARCHAR2(100) NOT NULL,
     password_hash VARCHAR2(255) NOT NULL,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    xp_total NUMBER DEFAULT 0 NOT NULL,
+    meta_cursos_mensal NUMBER DEFAULT 10 NOT NULL,
     CONSTRAINT uk_usuario_email UNIQUE (email)
 );
 
--- Índice para email
-CREATE INDEX idx_usuario_email ON GS_USUARIO(email);
+-- Nota: O índice para email é criado automaticamente pela constraint UNIQUE
+-- Não é necessário criar manualmente
 
 -- =====================================================
 -- Tabela: GS_HABILIDADE
@@ -34,8 +96,12 @@ CREATE TABLE GS_HABILIDADE (
     nome VARCHAR2(100) NOT NULL,
     categoria VARCHAR2(50) NOT NULL,
     descricao CLOB,
+    nivel VARCHAR2(20),
+    progresso_percentual NUMBER DEFAULT 0,
     CONSTRAINT fk_habilidade_usuario FOREIGN KEY (id_usuario) 
-        REFERENCES GS_USUARIO(id_usuario) ON DELETE SET NULL
+        REFERENCES GS_USUARIO(id_usuario) ON DELETE SET NULL,
+    CONSTRAINT ck_habilidade_nivel CHECK (nivel IN ('Iniciante', 'Intermediário', 'Avançado')),
+    CONSTRAINT ck_habilidade_progresso CHECK (progresso_percentual >= 0 AND progresso_percentual <= 100)
 );
 
 -- Índices para GS_HABILIDADE
@@ -55,12 +121,129 @@ CREATE TABLE GS_CURSO (
     link VARCHAR2(500),
     descricao CLOB,
     duracao_horas NUMBER,
-    nivel VARCHAR2(20) CHECK (nivel IN ('Iniciante', 'Intermediário', 'Avançado'))
+    nivel VARCHAR2(20),
+    id_alura VARCHAR2(100),
+    slug VARCHAR2(200),
+    instrutor VARCHAR2(200),
+    imagem_url VARCHAR2(500),
+    categoria_alura VARCHAR2(100),
+    origem VARCHAR2(20) DEFAULT 'MANUAL',
+    CONSTRAINT ck_curso_nivel CHECK (nivel IN ('Iniciante', 'Intermediário', 'Avançado')),
+    CONSTRAINT ck_curso_origem CHECK (origem IN ('ALURA', 'MANUAL'))
 );
 
 -- Índices para GS_CURSO
 CREATE INDEX idx_curso_categoria ON GS_CURSO(categoria);
 CREATE INDEX idx_curso_nome ON GS_CURSO(nome);
+CREATE INDEX idx_curso_id_alura ON GS_CURSO(id_alura);
+CREATE INDEX idx_curso_origem ON GS_CURSO(origem);
+
+-- =====================================================
+-- Tabela: GS_USUARIO_CURSO
+-- Descrição: Relacionamento entre usuário e curso com progresso
+-- =====================================================
+CREATE TABLE GS_USUARIO_CURSO (
+    id_usuario_curso NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario NUMBER NOT NULL,
+    id_curso NUMBER,
+    id_curso_alura VARCHAR2(100),
+    progresso_percentual NUMBER DEFAULT 0,
+    data_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_conclusao TIMESTAMP,
+    concluido CHAR(1) DEFAULT 'N',
+    xp_ganho NUMBER DEFAULT 0,
+    CONSTRAINT fk_usuario_curso_usuario FOREIGN KEY (id_usuario) 
+        REFERENCES GS_USUARIO(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_usuario_curso_curso FOREIGN KEY (id_curso) 
+        REFERENCES GS_CURSO(id_curso) ON DELETE SET NULL,
+    CONSTRAINT ck_usuario_curso_progresso CHECK (progresso_percentual >= 0 AND progresso_percentual <= 100),
+    CONSTRAINT ck_usuario_curso_concluido CHECK (concluido IN ('S', 'N')),
+    CONSTRAINT ck_usuario_curso_curso CHECK (
+        (id_curso IS NOT NULL AND id_curso_alura IS NULL) OR 
+        (id_curso IS NULL AND id_curso_alura IS NOT NULL)
+    )
+);
+
+-- Índices para GS_USUARIO_CURSO
+CREATE INDEX idx_usuario_curso_usuario ON GS_USUARIO_CURSO(id_usuario);
+CREATE INDEX idx_usuario_curso_curso ON GS_USUARIO_CURSO(id_curso);
+CREATE INDEX idx_usuario_curso_alura ON GS_USUARIO_CURSO(id_curso_alura);
+CREATE INDEX idx_usuario_curso_concluido ON GS_USUARIO_CURSO(concluido);
+
+-- =====================================================
+-- Tabela: GS_META_MENSAL
+-- Descrição: Metas mensais de cursos por usuário
+-- =====================================================
+CREATE TABLE GS_META_MENSAL (
+    id_meta NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario NUMBER NOT NULL,
+    mes NUMBER NOT NULL,
+    ano NUMBER NOT NULL,
+    meta_cursos NUMBER NOT NULL,
+    cursos_concluidos NUMBER DEFAULT 0,
+    CONSTRAINT fk_meta_usuario FOREIGN KEY (id_usuario) 
+        REFERENCES GS_USUARIO(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT ck_meta_mes CHECK (mes >= 1 AND mes <= 12),
+    CONSTRAINT uk_meta_usuario_mes_ano UNIQUE (id_usuario, mes, ano)
+);
+
+-- Definir valor padrão para meta_cursos usando ALTER TABLE
+-- (Oracle não permite DEFAULT seguido de NOT NULL em algumas versões)
+ALTER TABLE GS_META_MENSAL MODIFY meta_cursos DEFAULT 10;
+
+-- Índices para GS_META_MENSAL
+CREATE INDEX idx_meta_usuario ON GS_META_MENSAL(id_usuario);
+CREATE INDEX idx_meta_mes_ano ON GS_META_MENSAL(mes, ano);
+
+-- =====================================================
+-- TRIGGERS E PROCEDURES
+-- =====================================================
+
+-- Trigger para atualizar XP total do usuário quando curso é concluído
+CREATE OR REPLACE TRIGGER trg_atualizar_xp_usuario
+AFTER UPDATE OF concluido ON GS_USUARIO_CURSO
+FOR EACH ROW
+WHEN (NEW.concluido = 'S' AND OLD.concluido = 'N')
+BEGIN
+    UPDATE GS_USUARIO
+    SET xp_total = xp_total + NVL(:NEW.xp_ganho, 0)
+    WHERE id_usuario = :NEW.id_usuario;
+END;
+/
+
+-- Trigger para atualizar contador de cursos concluídos na meta mensal
+CREATE OR REPLACE TRIGGER trg_atualizar_meta_mensal
+AFTER UPDATE OF concluido ON GS_USUARIO_CURSO
+FOR EACH ROW
+WHEN (NEW.concluido = 'S' AND OLD.concluido = 'N')
+BEGIN
+    UPDATE GS_META_MENSAL
+    SET cursos_concluidos = cursos_concluidos + 1
+    WHERE id_usuario = :NEW.id_usuario
+      AND mes = EXTRACT(MONTH FROM :NEW.data_conclusao)
+      AND ano = EXTRACT(YEAR FROM :NEW.data_conclusao);
+END;
+/
+
+-- Procedure para calcular progresso de habilidade baseado nos cursos
+CREATE OR REPLACE PROCEDURE sp_calcular_progresso_habilidade(
+    p_id_habilidade IN NUMBER
+) AS
+    v_progresso_medio NUMBER;
+BEGIN
+    SELECT NVL(AVG(uc.progresso_percentual), 0)
+    INTO v_progresso_medio
+    FROM GS_USUARIO_CURSO uc
+    INNER JOIN GS_CURSO c ON uc.id_curso = c.id_curso
+    INNER JOIN GS_HABILIDADE h ON c.categoria = h.categoria
+    WHERE h.id_habilidade = p_id_habilidade
+      AND uc.id_usuario = (SELECT id_usuario FROM GS_HABILIDADE WHERE id_habilidade = p_id_habilidade);
+    
+    UPDATE GS_HABILIDADE
+    SET progresso_percentual = v_progresso_medio
+    WHERE id_habilidade = p_id_habilidade;
+END;
+/
 
 -- =====================================================
 -- Dados de Exemplo
@@ -121,6 +304,16 @@ INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VA
 ('React: desenvolvendo com JavaScript', 'Tecnologia', 'https://www.alura.com.br/curso-online-react', 'Construa interfaces modernas com React', 35, 'Intermediário');
 INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
 ('Marketing Digital: estratégias e métricas', 'Marketing', 'https://www.alura.com.br/curso-online-marketing-digital', 'Estratégias completas de marketing digital', 25, 'Intermediário');
+
+-- Criar metas mensais para usuários de exemplo (mês atual)
+INSERT INTO GS_META_MENSAL (id_usuario, mes, ano, meta_cursos, cursos_concluidos)
+SELECT 
+    id_usuario,
+    EXTRACT(MONTH FROM CURRENT_TIMESTAMP),
+    EXTRACT(YEAR FROM CURRENT_TIMESTAMP),
+    10,
+    0
+FROM GS_USUARIO;
 
 -- Confirmar as transações
 COMMIT;

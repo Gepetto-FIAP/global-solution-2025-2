@@ -46,7 +46,8 @@ backend/
 │   │       └── application.properties
 │   └── test/
 ├── pom.xml
-└── run.sh                                    # Script para executar a aplicação
+├── run.sh                                    # Script para executar (Linux/Mac)
+└── run.ps1                                   # Script para executar (Windows)
 ```
 
 ## Requisitos
@@ -91,14 +92,26 @@ Isso gerará um arquivo JAR executável em `target/habilidades-api.jar`
 
 ## Executando Localmente
 
-### Opção 1: Usando o script run.sh (Recomendado)
+### Opção 1: Usando os scripts de execução (Recomendado)
 
-O script `run.sh` carrega automaticamente as variáveis de ambiente do `.env.local`:
+Os scripts carregam automaticamente as variáveis de ambiente do `.env.local`:
 
+**Linux/Mac:**
 ```bash
 cd backend
 chmod +x run.sh
 ./run.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+cd backend
+.\run.ps1
+```
+
+**Nota:** Se você receber erro de política de execução no PowerShell, execute:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ### Opção 2: Executando o JAR diretamente
@@ -257,10 +270,28 @@ Certifique-se de que:
 
 ### Variáveis de Ambiente não Carregadas
 
-Se o script `run.sh` não estiver carregando as variáveis:
+Se os scripts não estiverem carregando as variáveis:
 1. Verifique se o arquivo `.env.local` existe na raiz do projeto
 2. Verifique se o caminho relativo está correto (`../env.local` do diretório `backend`)
 3. Execute manualmente exportando as variáveis antes de rodar o JAR
+
+**Linux/Mac:**
+```bash
+export ORACLE_USER=seu_usuario
+export ORACLE_PASSWORD=sua_senha
+export ORACLE_CONNECT_STRING=oracle.fiap.com.br:1521/orcl
+export JWT_SECRET=sua-chave-secreta
+java -jar target/habilidades-api.jar
+```
+
+**Windows (PowerShell):**
+```powershell
+$env:ORACLE_USER="seu_usuario"
+$env:ORACLE_PASSWORD="sua_senha"
+$env:ORACLE_CONNECT_STRING="oracle.fiap.com.br:1521/orcl"
+$env:JWT_SECRET="sua-chave-secreta"
+java -jar target/habilidades-api.jar
+```
 
 ### Erro "MessageBodyWriter not found"
 
@@ -268,15 +299,15 @@ Se você receber erro sobre `MessageBodyWriter not found for media type=applicat
 
 ## Arquitetura
 
-### Diferenças do Spring Boot
+### Arquitetura Jakarta EE
 
-Esta aplicação foi migrada de Spring Boot para Jakarta EE com arquitetura simplificada:
+Esta aplicação utiliza Jakarta EE com arquitetura simplificada:
 
-1. **Empacotamento**: JAR executável único (não WAR)
+1. **Empacotamento**: JAR executável único
 2. **Servidor**: Grizzly HTTP Server embutido (não requer servidor de aplicação externo)
-3. **Injeção de Dependências**: Instâncias diretas (não usa CDI)
+3. **Injeção de Dependências**: Instâncias diretas
 4. **REST**: JAX-RS (Jersey) com `@Path`, `@GET`, `@POST`
-5. **Persistência**: JDBC direto com HikariCP (não usa JPA/Hibernate)
+5. **Persistência**: JDBC direto com HikariCP (connection pool)
 6. **Configuração**: Variáveis de ambiente + código Java
 
 ### Componentes Principais
@@ -301,6 +332,7 @@ Esta aplicação foi migrada de Spring Boot para Jakarta EE com arquitetura simp
 
 Para desenvolvimento, você pode usar o Maven em modo watch:
 
+**Linux/Mac:**
 ```bash
 # Terminal 1: Rodar a aplicação
 cd backend
@@ -310,6 +342,18 @@ cd backend
 cd backend
 mvn clean package
 # Reiniciar a aplicação (Ctrl+C e rodar ./run.sh novamente)
+```
+
+**Windows:**
+```powershell
+# Terminal 1: Rodar a aplicação
+cd backend
+.\run.ps1
+
+# Terminal 2: Fazer alterações e recompilar
+cd backend
+mvn clean package
+# Reiniciar a aplicação (Ctrl+C e rodar .\run.ps1 novamente)
 ```
 
 ## Licença

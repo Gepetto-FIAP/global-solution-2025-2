@@ -1,17 +1,11 @@
 import { useState, useEffect } from 'react';
-
-interface Course {
-  id: number;
-  name: string;
-  duration: string;
-  description: string;
-  link?: string;
-  completed: boolean;
-  isManual?: boolean;
-  isEditing?: boolean;
-}
+import { Curso } from '@/lib/types';
+import { listarCursosSugeridos } from '@/lib/services/cursos.service';
+import { atualizarProgressoCurso, atualizarProgressoCursoAlura, marcarCursoComoConcluido, marcarCursoAluraComoConcluido } from '@/lib/services/progresso.service';
+import { criarCursoManual } from '@/lib/services/cursos.service';
 
 interface SkillCardProps {
+  id: number;
   title: string;
   category: string;
   level: 'Iniciante' | 'Intermediário' | 'Avançado' | 'Expert';
@@ -21,6 +15,7 @@ interface SkillCardProps {
 }
 
 export default function SkillCard({ 
+  id,
   title, 
   category, 
   level, 
@@ -28,51 +23,32 @@ export default function SkillCard({
   icon, 
   color,
 }: SkillCardProps) {
+  // Garantir que id está definido
+  if (!id) {
+    console.error('SkillCard: id é obrigatório');
+    return null;
+  }
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [courses, setCourses] = useState<Curso[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleStudyClick = async () => {
     setIsModalOpen(true);
     setIsLoadingSuggestions(true);
+    setError(null);
     
-    // Simular chamada à API de IA para sugerir cursos
-    // Em produção, isso seria uma chamada real à sua API/IA
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const suggestedCourses: Course[] = [
-      {
-        id: 1,
-        name: `${title} - Fundamentos`,
-        duration: '8h',
-        description: `Aprenda os conceitos fundamentais de ${title}`,
-        completed: false
-      },
-      {
-        id: 2,
-        name: `${title} na Prática`,
-        duration: '12h',
-        description: `Projetos práticos e aplicações reais de ${title}`,
-        completed: false
-      },
-      {
-        id: 3,
-        name: `${title} Avançado`,
-        duration: '16h',
-        description: `Técnicas avançadas e otimizações em ${title}`,
-        completed: false
-      },
-      {
-        id: 4,
-        name: `Certificação ${title}`,
-        duration: '20h',
-        description: `Prepare-se para certificações profissionais`,
-        completed: false
-      }
-    ];
-    
-    setCourses(suggestedCourses);
-    setIsLoadingSuggestions(false);
+    try {
+      // Buscar cursos sugeridos da API
+      const cursosSugeridos = await listarCursosSugeridos(id);
+      setCourses(cursosSugeridos);
+    } catch (err) {
+      console.error('Erro ao buscar cursos sugeridos:', err);
+      setError('Erro ao carregar cursos sugeridos. Tente novamente.');
+      setCourses([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
   };
 
   const handleCloseModal = () => {
@@ -80,52 +56,113 @@ export default function SkillCard({
     setCourses([]);
   };
 
-  const toggleCourseCompletion = (courseId: number) => {
-    setCourses(prevCourses => 
-      prevCourses.map(course => 
-        course.id === courseId 
-          ? { ...course, completed: !course.completed }
-          : course
-      )
-    );
+  const toggleCourseCompletion = async (course: Curso) => {
+    try {
+      const novoStatus = !course.concluido;
+      
+      if (course.id) {
+        // Curso local
+        if (novoStatus) {
+          await marcarCursoComoConcluido(course.id);
+        } else {
+          await atualizarProgressoCurso(course.id, { progressoPercentual: 0, concluido: false });
+        }
+      } else if (course.idAlura) {
+        // Curso da Alura
+        if (novoStatus) {
+          await marcarCursoAluraComoConcluido(course.idAlura);
+        } else {
+          await atualizarProgressoCursoAlura(course.idAlura, { progressoPercentual: 0, concluido: false });
+        }
+      }
+      
+      // Atualizar estado local
+      setCourses(prevCourses => 
+        prevCourses.map(c => 
+          (c.id === course.id || c.idAlura === course.idAlura)
+            ? { ...c, concluido: novoStatus, progressoPercentual: novoStatus ? 100 : 0 }
+            : c
+        )
+      );
+    } catch (err) {
+      console.error('Erro ao atualizar progresso do curso:', err);
+      setError('Erro ao atualizar progresso. Tente novamente.');
+    }
   };
 
   const addNewCourse = () => {
-    const newCourse: Course = {
-      id: Date.now(),
-      name: '',
-      duration: '10h',
-      description: '',
+    const newCourse: Curso = {
+      nome: '',
+      categoria: category,
+      duracaoHoras: 10,
+      descricao: '',
       link: '',
-      completed: false,
-      isManual: true,
-      isEditing: true
+      concluido: false,
+      origem: 'MANUAL',
+      progressoPercentual: 0
     };
     setCourses(prevCourses => [...prevCourses, newCourse]);
   };
 
-  const updateCourse = (courseId: number, field: keyof Course, value: string) => {
+  const updateCourse = (course: Curso, field: keyof Curso, value: string | number) => {
     setCourses(prevCourses =>
-      prevCourses.map(course =>
-        course.id === courseId
-          ? { ...course, [field]: value }
-          : course
+      prevCourses.map(c =>
+        (c.id === course.id || c.idAlura === course.idAlura)
+          ? { ...c, [field]: value }
+          : c
       )
     );
   };
-
-  const toggleEditMode = (courseId: number) => {
-    setCourses(prevCourses =>
-      prevCourses.map(course =>
-        course.id === courseId
-          ? { ...course, isEditing: !course.isEditing }
-          : course
-      )
-    );
+  
+  const saveManualCourse = async (course: Curso) => {
+    try {
+      if (!course.nome || course.nome.trim() === '') {
+        setError('Nome do curso é obrigatório');
+        return;
+      }
+      
+      const cursoSalvo = await criarCursoManual({
+        nome: course.nome,
+        categoria: course.categoria || category,
+        link: course.link,
+        descricao: course.descricao,
+        duracaoHoras: course.duracaoHoras,
+        nivel: course.nivel
+      });
+      
+      // Substituir curso temporário pelo salvo
+      setCourses(prevCourses =>
+        prevCourses.map(c =>
+          (c.nome === course.nome && !c.id && !c.idAlura)
+            ? cursoSalvo
+            : c
+        )
+      );
+    } catch (err) {
+      console.error('Erro ao salvar curso manual:', err);
+      setError('Erro ao salvar curso. Tente novamente.');
+    }
   };
 
-  const deleteCourse = (courseId: number) => {
-    setCourses(prevCourses => prevCourses.filter(course => course.id !== courseId));
+  const toggleEditMode = (course: Curso) => {
+    // Para cursos manuais, permitir edição
+    if (course.origem === 'MANUAL' && !course.id && !course.idAlura) {
+      // Curso ainda não salvo, apenas atualizar estado local
+      return;
+    }
+    // Para cursos já salvos, não permitir edição por enquanto
+    // (pode ser implementado depois com endpoint de atualização)
+  };
+
+  const deleteCourse = (course: Curso) => {
+    // Remover apenas cursos manuais não salvos
+    if (course.origem === 'MANUAL' && !course.id && !course.idAlura) {
+      setCourses(prevCourses => 
+        prevCourses.filter(c => 
+          !(c.nome === course.nome && !c.id && !c.idAlura)
+        )
+      );
+    }
   };
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -218,96 +255,116 @@ export default function SkillCard({
                       </button>
                     </div>
                     
-                    {courses.length === 0 ? (
+                    {error && (
+                      <div className="error-message" style={{ color: 'red', marginBottom: '1rem' }}>
+                        {error}
+                      </div>
+                    )}
+                    {courses.length === 0 && !isLoadingSuggestions ? (
                       <p className="no-courses">Nenhum curso sugerido ainda.</p>
                     ) : (
                       <div className="courses-grid">
-                        {courses.map((course) => (
-                          <div 
-                            key={course.id} 
-                            className={`course-item ${course.completed ? 'completed' : ''} ${course.isEditing ? 'editing' : ''}`}
-                          >
-                            <div className="course-checkbox">
-                              <input
-                                type="checkbox"
-                                id={`course-${course.id}`}
-                                checked={course.completed}
-                                onChange={() => toggleCourseCompletion(course.id)}
-                              />
-                              <label htmlFor={`course-${course.id}`}></label>
-                            </div>
-                            
-                            <div className="course-details">
-                              {course.isEditing && course.isManual ? (
-                                <div className="course-edit-form">
-                                  <input
-                                    type="text"
-                                    className="course-input"
-                                    placeholder="Nome do curso"
-                                    value={course.name}
-                                    onChange={(e) => updateCourse(course.id, 'name', e.target.value)}
-                                  />
-                                  <input
-                                    type="url"
-                                    className="course-input"
-                                    placeholder="Link do curso (https://...)"
-                                    value={course.link || ''}
-                                    onChange={(e) => updateCourse(course.id, 'link', e.target.value)}
-                                  />
-                                  <input
-                                    type="text"
-                                    className="course-input-small"
-                                    placeholder="Duração (ex: 8h)"
-                                    value={course.duration}
-                                    onChange={(e) => updateCourse(course.id, 'duration', e.target.value)}
-                                  />
-                                </div>
-                              ) : (
-                                <>
-                                  <h4 className="course-name">
-                                    {course.link ? (
-                                      <a href={course.link} target="_blank" rel="noopener noreferrer" className="course-link">
-                                        {course.name} 🔗
-                                      </a>
-                                    ) : (
-                                      course.name
+                        {courses.map((course, index) => {
+                          const courseKey = course.id || course.idAlura || `temp-${index}`;
+                          const isEditing = course.origem === 'MANUAL' && !course.id && !course.idAlura;
+                          
+                          return (
+                            <div 
+                              key={courseKey} 
+                              className={`course-item ${course.concluido ? 'completed' : ''} ${isEditing ? 'editing' : ''}`}
+                            >
+                              <div className="course-checkbox">
+                                <input
+                                  type="checkbox"
+                                  id={`course-${courseKey}`}
+                                  checked={course.concluido || false}
+                                  onChange={() => toggleCourseCompletion(course)}
+                                />
+                                <label htmlFor={`course-${courseKey}`}></label>
+                              </div>
+                              
+                              <div className="course-details">
+                                {isEditing ? (
+                                  <div className="course-edit-form">
+                                    <input
+                                      type="text"
+                                      className="course-input"
+                                      placeholder="Nome do curso"
+                                      value={course.nome || ''}
+                                      onChange={(e) => updateCourse(course, 'nome', e.target.value)}
+                                    />
+                                    <input
+                                      type="url"
+                                      className="course-input"
+                                      placeholder="Link do curso (https://...)"
+                                      value={course.link || ''}
+                                      onChange={(e) => updateCourse(course, 'link', e.target.value)}
+                                    />
+                                    <input
+                                      type="number"
+                                      className="course-input-small"
+                                      placeholder="Duração em horas"
+                                      value={course.duracaoHoras || ''}
+                                      onChange={(e) => updateCourse(course, 'duracaoHoras', parseInt(e.target.value) || 0)}
+                                    />
+                                    <button
+                                      className="btn-save"
+                                      onClick={() => saveManualCourse(course)}
+                                    >
+                                      Salvar
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <h4 className="course-name">
+                                      {course.link ? (
+                                        <a href={course.link} target="_blank" rel="noopener noreferrer" className="course-link">
+                                          {course.nome} 🔗
+                                        </a>
+                                      ) : (
+                                        course.nome
+                                      )}
+                                    </h4>
+                                    <p className="course-description">{course.descricao}</p>
+                                    <span className="course-duration">
+                                      ⏱️ {course.duracaoHoras ? `${course.duracaoHoras}h` : 'Duração não informada'}
+                                    </span>
+                                    {course.progressoPercentual !== undefined && course.progressoPercentual > 0 && (
+                                      <div className="course-progress">
+                                        <div className="progress-bar-small">
+                                          <div 
+                                            className="progress-fill-small" 
+                                            style={{ width: `${course.progressoPercentual}%`, backgroundColor: color }}
+                                          ></div>
+                                        </div>
+                                        <span className="progress-label">{course.progressoPercentual}% concluído</span>
+                                      </div>
                                     )}
-                                  </h4>
-                                  <p className="course-description">{course.description}</p>
-                                  <span className="course-duration">⏱️ {course.duration}</span>
-                                </>
-                              )}
-                            </div>
+                                  </>
+                                )}
+                              </div>
 
-                            <div className="course-actions">
-                              {course.isManual && (
-                                <>
-                                  <button
-                                    className="btn-icon"
-                                    onClick={() => toggleEditMode(course.id)}
-                                    title={course.isEditing ? 'Salvar' : 'Editar'}
-                                  >
-                                    {course.isEditing ? '✓' : '✏️'}
-                                  </button>
+                              <div className="course-actions">
+                                {isEditing && (
                                   <button
                                     className="btn-icon btn-delete"
-                                    onClick={() => deleteCourse(course.id)}
+                                    onClick={() => deleteCourse(course)}
                                     title="Excluir"
                                   >
                                     🗑️
                                   </button>
-                                </>
-                              )}
-                              {course.completed && !course.isEditing && (
-                                <div className="course-badge">
-                                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                    <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
-                                </div>
-                              )}
+                                )}
+                                {course.concluido && !isEditing && (
+                                  <div className="course-badge">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                      <path d="M16.667 5L7.5 14.167 3.333 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -318,7 +375,7 @@ export default function SkillCard({
             <div className="modal-footer">
               <div className="courses-stats">
                 <span className="stats-text">
-                  {courses.filter(c => c.completed).length} de {courses.length} concluídos
+                  {courses.filter(c => c.concluido).length} de {courses.length} concluídos
                 </span>
               </div>
               <button className="btn-cancel" onClick={handleCloseModal}>
