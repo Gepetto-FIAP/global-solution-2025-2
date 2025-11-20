@@ -4,15 +4,15 @@ Backend REST API desenvolvido em **Jakarta EE** para o sistema Catálogo de Habi
 
 ## Tecnologias
 
-- **Java 17**
+- **Java 21 LTS**
 - **Jakarta EE** (JAX-RS)
-- **Jersey** para implementação JAX-RS
-- **Grizzly HTTP Server** (servidor embutido)
-- **JDBC** com **HikariCP** (connection pool)
-- **Oracle Database**
-- **JWT** (JSON Web Tokens)
-- **BCrypt** para hash de senhas
-- **Jackson** para serialização JSON
+- **Jersey 3.1.3** para implementação JAX-RS
+- **Grizzly HTTP Server 4.0.0** (servidor embutido)
+- **JDBC** com **HikariCP 5.0.1** (connection pool)
+- **Oracle Database 23c**
+- **JWT** (JSON Web Tokens) com jjwt 0.12.3
+- **BCrypt 0.4** para hash de senhas
+- **Jackson 2.14.1** para serialização JSON
 
 ## Estrutura do Projeto
 
