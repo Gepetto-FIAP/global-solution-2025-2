@@ -22,7 +22,7 @@ public class CorsFilter implements ContainerResponseFilter {
         String[] allowedOrigins = {
             "http://localhost:3000",
             "https://global-solution-2025-2.vercel.app",
-            "https://global-solution-2025-2-git-feat-luiz-gepetto-fiap.vercel.app"
+            "https://global-solution-2025-2-git-feat-luiz-lgpgomes-projects.vercel.app/auth/login"
         };
         
         // Verificar se a origem está na lista de permitidas
