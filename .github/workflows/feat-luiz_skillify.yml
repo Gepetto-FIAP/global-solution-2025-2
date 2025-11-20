@@ -28,11 +28,14 @@ jobs:
         working-directory: ./backend
         run: mvn clean package -DskipTests
 
+      - name: Rename JAR to app.jar
+        run: mv ${{ github.workspace }}/backend/target/habilidades-api.jar ${{ github.workspace }}/backend/target/app.jar
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: '${{ github.workspace }}/backend/target/habilidades-api.jar'
+          path: '${{ github.workspace }}/backend/target/app.jar'
 
   deploy:
     runs-on: ubuntu-latest
