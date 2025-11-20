@@ -12,18 +12,29 @@ import java.net.URI;
  */
 public class Main {
     
-    // Base URI para a aplicação
-    public static final String BASE_URI = "http://localhost:8080/";
+    /**
+     * Retorna a URI base da aplicação. Usa a variável PORT se disponível (Azure),
+     * caso contrário usa localhost:8080 (desenvolvimento local)
+     */
+    private static String getBaseUri() {
+        String port = System.getenv("PORT");
+        if (port == null || port.isEmpty()) {
+            return "http://localhost:8080/";
+        }
+        return "http://0.0.0.0:" + port + "/";
+    }
     
     /**
      * Inicia o servidor Grizzly HTTP expondo os recursos JAX-RS definidos na aplicação
      */
     public static HttpServer startServer() {
+        String baseUri = getBaseUri();
+        
         // Criar ResourceConfig que registra os recursos JAX-RS
         final ResourceConfig rc = ResourceConfig.forApplicationClass(JaxRsApplication.class);
         
         // Criar e iniciar o servidor Grizzly HTTP
-        return GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
+        return GrizzlyHttpServerFactory.createHttpServer(URI.create(baseUri), rc);
     }
     
     /**
@@ -31,9 +42,11 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
+            String baseUri = getBaseUri();
+            
             System.out.println("Iniciando Catálogo de Habilidades API...");
-            System.out.println("Servidor disponível em: " + BASE_URI);
-            System.out.println("API disponível em: " + BASE_URI + "api/");
+            System.out.println("Servidor disponível em: " + baseUri);
+            System.out.println("API disponível em: " + baseUri + "api/");
             
             final HttpServer server = startServer();
             
