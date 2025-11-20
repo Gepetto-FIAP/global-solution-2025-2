@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SkillCard from '../components/SkillCard';
+import SkillCardButton from '../components/SkillCardButton';
 import { getAuthUser } from '@/lib/auth';
 import { getCurrentUser } from '@/lib/services/auth.service';
 import { User } from '@/lib/types';
@@ -151,6 +152,12 @@ export default function App() {
             icon="📈"
             color="#9C27B0"
             
+          />
+
+          <SkillCardButton
+            onClick={() => alert('Adicionar nova habilidade')}
+            label="Adicionar Habilidade"
+            className="skill-card-button"
           />
         </div>
       </section>
