@@ -1,0 +1,514 @@
+/* User Profile Modal */
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.profile-modal-content {
+  background: var(--alura-dark);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.profile-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 2rem;
+  border-bottom: 1px solid var(--border);
+  gap: 1rem;
+}
+
+.profile-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.profile-avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--alura-blue), var(--alura-purple));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 2rem;
+  flex-shrink: 0;
+  border: 3px solid var(--border);
+}
+
+.profile-user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-user-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.profile-user-email {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.profile-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-modal-close:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* Stats Section */
+.profile-stats-section {
+  padding: 2rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-stat-card {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s;
+}
+
+.profile-stat-card:hover {
+  border-color: var(--alura-blue);
+  transform: translateY(-2px);
+}
+
+.profile-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.profile-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profile-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  margin: 0;
+}
+
+.profile-stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1;
+  margin: 0;
+}
+
+/* Goal Section */
+.profile-goal-section {
+  padding: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.profile-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.profile-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.profile-edit-btn:hover {
+  background: var(--surface);
+  border-color: var(--alura-blue);
+  color: var(--alura-blue);
+}
+
+/* Goal Edit */
+.profile-goal-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profile-input-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.profile-goal-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: var(--text);
+  font-family: 'Play', sans-serif;
+  transition: all 0.2s;
+}
+
+.profile-goal-input:focus {
+  outline: none;
+  border-color: var(--alura-blue);
+  background: var(--surface-hover);
+}
+
+.profile-goal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.profile-btn-cancel {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Play', sans-serif;
+}
+
+.profile-btn-cancel:hover {
+  background: var(--surface);
+}
+
+.profile-btn-save {
+  background: linear-gradient(135deg, var(--alura-blue), var(--alura-purple));
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Play', sans-serif;
+}
+
+.profile-btn-save:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(22, 123, 247, 0.3);
+}
+
+/* Goal Display */
+.profile-goal-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-goal-info {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.profile-goal-current {
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--alura-blue);
+}
+
+.profile-goal-separator {
+  font-size: 1.5rem;
+  opacity: 0.7;
+  color: var(--text-secondary);
+}
+
+.profile-goal-total {
+  font-size: 1.5rem;
+  opacity: 0.9;
+  color: var(--text);
+}
+
+.profile-goal-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-left: 0.5rem;
+}
+
+.profile-progress-bar-container {
+  width: 100%;
+}
+
+.profile-progress-bar-track {
+  height: 16px;
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.profile-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(135deg, var(--alura-blue), var(--alura-green));
+  border-radius: 8px;
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+  position: relative;
+  min-width: 60px;
+}
+
+.profile-progress-percentage {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.profile-goal-message {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Skills Section */
+.profile-skills-section {
+  padding: 2rem;
+}
+
+.profile-skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.profile-skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.profile-skill-card:hover {
+  border-color: var(--alura-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.profile-skill-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.profile-skill-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.profile-skill-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-skill-category {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.profile-skill-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.25rem;
+}
+
+.profile-skill-level {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(22, 123, 247, 0.2);
+  color: var(--alura-blue);
+}
+
+.profile-skill-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.profile-skill-badge {
+  color: var(--alura-green);
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-modal-content {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .profile-modal-header {
+    padding: 1.5rem;
+  }
+
+  .profile-header-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-avatar-large {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .profile-user-name {
+    font-size: 1.5rem;
+  }
+
+  .profile-stats-section {
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .profile-stat-card {
+    min-width: 100%;
+  }
+
+  .profile-goal-section,
+  .profile-skills-section {
+    padding: 1.5rem;
+  }
+
+  .profile-skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-goal-actions {
+    flex-direction: column;
+  }
+
+  .profile-btn-cancel,
+  .profile-btn-save {
+    width: 100%;
+  }
+}
