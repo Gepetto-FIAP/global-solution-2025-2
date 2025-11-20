@@ -17,6 +17,24 @@ Criar um sistema simples onde o usuário possa:
 
 ---
 
+## ☁️ Deploy na Azure
+
+### 🚀 Deploy Rápido (3 passos)
+
+```powershell
+# 1. Instalar Azure CLI
+winget install Microsoft.AzureCLI
+
+# 2. Executar script automático
+.\azure-deploy.ps1
+
+# 3. Pronto! 🎉
+```
+
+📖 **Documentação completa**: Veja [AZURE_QUICKSTART.md](AZURE_QUICKSTART.md) ou [AZURE_DEPLOY.md](AZURE_DEPLOY.md)
+
+---
+
 ## 🚀 Como Executar o Projeto Localmente
 
 ### Pré-requisitos
