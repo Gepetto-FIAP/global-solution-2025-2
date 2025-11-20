@@ -15,7 +15,26 @@ public class CorsFilter implements ContainerResponseFilter {
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext)
             throws IOException {
-        responseContext.getHeaders().add("Access-Control-Allow-Origin", "http://localhost:3000");
+        // Obter a origem da requisição
+        String origin = requestContext.getHeaderString("Origin");
+        
+        // Lista de origens permitidas
+        String[] allowedOrigins = {
+            "http://localhost:3000",
+            "https://global-solution-2025-2.vercel.app",
+            "https://global-solution-2025-2-git-feat-luiz-lgpgomes-projects.vercel.app/auth/login"
+        };
+        
+        // Verificar se a origem está na lista de permitidas
+        if (origin != null) {
+            for (String allowedOrigin : allowedOrigins) {
+                if (origin.equals(allowedOrigin)) {
+                    responseContext.getHeaders().add("Access-Control-Allow-Origin", origin);
+                    break;
+                }
+            }
+        }
+        
         responseContext.getHeaders().add("Access-Control-Allow-Credentials", "true");
         responseContext.getHeaders().add("Access-Control-Allow-Headers", 
                 "origin, content-type, accept, authorization");

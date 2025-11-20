@@ -48,9 +48,19 @@ export async function apiPost<T>(
     };
   } catch (error) {
     console.error('API POST error:', error);
+    console.error('Endpoint:', `${API_BASE_URL}${endpoint}`);
+    
+    let errorMessage = 'Erro de conexão com o servidor';
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Erro de conexão com o servidor',
+      message: errorMessage,
     };
   }
 }
@@ -89,9 +99,19 @@ export async function apiGet<T>(
     };
   } catch (error) {
     console.error('API GET error:', error);
+    console.error('Endpoint:', `${API_BASE_URL}${endpoint}`);
+    
+    let errorMessage = 'Erro de conexão com o servidor';
+    
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão.';
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Erro de conexão com o servidor',
+      message: errorMessage,
     };
   }
 }
