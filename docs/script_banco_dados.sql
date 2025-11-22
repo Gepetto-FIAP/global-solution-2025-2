@@ -17,6 +17,7 @@ CREATE TABLE GS_USUARIO (
     nome VARCHAR2(100) NOT NULL,
     email VARCHAR2(100) NOT NULL,
     password_hash VARCHAR2(255) NOT NULL,
+    xp_total NUMBER DEFAULT 0 NOT NULL,
     data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uk_usuario_email UNIQUE (email)
 );
@@ -25,42 +26,53 @@ CREATE TABLE GS_USUARIO (
 CREATE INDEX idx_usuario_email ON GS_USUARIO(email);
 
 -- =====================================================
--- Tabela: GS_HABILIDADE
--- Descrição: Armazena habilidades cadastradas no sistema
+-- Tabela: GS_HABILIDADE_USUARIO
+-- Descrição: Habilidades dos usuários ligadas a categorias/subcategorias da Alura
 -- =====================================================
-CREATE TABLE GS_HABILIDADE (
+CREATE TABLE GS_HABILIDADE_USUARIO (
     id_habilidade NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    id_usuario NUMBER,
+    id_usuario NUMBER NOT NULL,
     nome VARCHAR2(100) NOT NULL,
-    categoria VARCHAR2(50) NOT NULL,
-    descricao CLOB,
+    categoria_slug VARCHAR2(100) NOT NULL,
+    subcategoria_slug VARCHAR2(100),
+    nivel VARCHAR2(20) CHECK (nivel IN ('Iniciante', 'Intermediário', 'Avançado', 'Expert')),
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT fk_habilidade_usuario FOREIGN KEY (id_usuario) 
-        REFERENCES GS_USUARIO(id_usuario) ON DELETE SET NULL
+        REFERENCES GS_USUARIO(id_usuario) ON DELETE CASCADE
 );
 
--- Índices para GS_HABILIDADE
-CREATE INDEX idx_habilidade_categoria ON GS_HABILIDADE(categoria);
-CREATE INDEX idx_habilidade_nome ON GS_HABILIDADE(nome);
-CREATE INDEX idx_habilidade_usuario ON GS_HABILIDADE(id_usuario);
+-- Índices para GS_HABILIDADE_USUARIO
+CREATE INDEX idx_habilidade_usuario_id ON GS_HABILIDADE_USUARIO(id_usuario);
+CREATE INDEX idx_habilidade_categoria ON GS_HABILIDADE_USUARIO(categoria_slug);
+CREATE INDEX idx_habilidade_subcategoria ON GS_HABILIDADE_USUARIO(subcategoria_slug);
 
 -- =====================================================
--- Tabela: GS_CURSO
--- Descrição: Armazena cursos simulados da Alura
--- Relacionamento: Relaciona-se com GS_HABILIDADE pela categoria
+-- Tabela: GS_CURSO_INSCRICAO
+-- Descrição: Inscrições dos usuários em cursos da Alura
 -- =====================================================
-CREATE TABLE GS_CURSO (
-    id_curso NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nome VARCHAR2(200) NOT NULL,
-    categoria VARCHAR2(50) NOT NULL,
-    link VARCHAR2(500),
-    descricao CLOB,
-    duracao_horas NUMBER,
-    nivel VARCHAR2(20) CHECK (nivel IN ('Iniciante', 'Intermediário', 'Avançado'))
+CREATE TABLE GS_CURSO_INSCRICAO (
+    id_inscricao NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario NUMBER NOT NULL,
+    id_habilidade NUMBER,
+    curso_slug VARCHAR2(200) NOT NULL,
+    curso_nome VARCHAR2(500) NOT NULL,
+    tempo_estimado NUMBER NOT NULL,
+    horas_estudadas NUMBER DEFAULT 0 NOT NULL,
+    completado NUMBER(1) DEFAULT 0 NOT NULL,
+    data_inscricao TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    data_conclusao TIMESTAMP,
+    CONSTRAINT fk_inscricao_usuario FOREIGN KEY (id_usuario) 
+        REFERENCES GS_USUARIO(id_usuario) ON DELETE CASCADE,
+    CONSTRAINT fk_inscricao_habilidade FOREIGN KEY (id_habilidade) 
+        REFERENCES GS_HABILIDADE_USUARIO(id_habilidade) ON DELETE SET NULL,
+    CONSTRAINT chk_completado CHECK (completado IN (0, 1))
 );
 
--- Índices para GS_CURSO
-CREATE INDEX idx_curso_categoria ON GS_CURSO(categoria);
-CREATE INDEX idx_curso_nome ON GS_CURSO(nome);
+-- Índices para GS_CURSO_INSCRICAO
+CREATE INDEX idx_inscricao_usuario ON GS_CURSO_INSCRICAO(id_usuario);
+CREATE INDEX idx_inscricao_habilidade ON GS_CURSO_INSCRICAO(id_habilidade);
+CREATE INDEX idx_inscricao_completado ON GS_CURSO_INSCRICAO(completado);
+CREATE INDEX idx_inscricao_curso_slug ON GS_CURSO_INSCRICAO(curso_slug);
 
 -- =====================================================
 -- Dados de Exemplo
@@ -69,58 +81,42 @@ CREATE INDEX idx_curso_nome ON GS_CURSO(nome);
 -- Inserir usuários de exemplo
 -- Nota: Os password_hash abaixo são apenas exemplos. Em produção, use bcrypt no backend Java
 -- Hash de exemplo para senha "senha123": $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
-INSERT INTO GS_USUARIO (nome, email, password_hash) VALUES
-('João Silva', 'joao@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
-INSERT INTO GS_USUARIO (nome, email, password_hash) VALUES
-('Maria Santos', 'maria@empresa.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
-INSERT INTO GS_USUARIO (nome, email, password_hash) VALUES
-('Tech Solutions Ltda', 'contato@techsolutions.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
-INSERT INTO GS_USUARIO (nome, email, password_hash) VALUES
-('Ana Costa', 'ana.costa@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
-INSERT INTO GS_USUARIO (nome, email, password_hash) VALUES
-('Instituto de Tecnologia', 'contato@institutotech.edu.br', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+INSERT INTO GS_USUARIO (nome, email, password_hash, xp_total) VALUES
+('João Silva', 'joao@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 150);
+INSERT INTO GS_USUARIO (nome, email, password_hash, xp_total) VALUES
+('Maria Santos', 'maria@empresa.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 200);
+INSERT INTO GS_USUARIO (nome, email, password_hash, xp_total) VALUES
+('Tech Solutions Ltda', 'contato@techsolutions.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 500);
+INSERT INTO GS_USUARIO (nome, email, password_hash, xp_total) VALUES
+('Ana Costa', 'ana.costa@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 75);
+INSERT INTO GS_USUARIO (nome, email, password_hash, xp_total) VALUES
+('Instituto de Tecnologia', 'contato@institutotech.edu.br', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 300);
 
--- Inserir habilidades de exemplo
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(1, 'Java', 'Tecnologia', 'Linguagem de programação orientada a objetos, amplamente usada no desenvolvimento de aplicações empresariais');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(1, 'Comunicação', 'Soft Skill', 'Habilidade de comunicação assertiva e eficaz em diferentes contextos profissionais');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(2, 'UX Design', 'Design', 'Design de experiência do usuário, focado em criar interfaces intuitivas e agradáveis');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(2, 'Liderança', 'Soft Skill', 'Habilidades de liderança de equipes e gestão de pessoas');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(3, 'Python', 'Tecnologia', 'Linguagem de programação versátil, muito usada em ciência de dados e automação');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(4, 'React', 'Tecnologia', 'Biblioteca JavaScript para construção de interfaces de usuário');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(4, 'Gestão de Projetos', 'Negócios', 'Metodologias e ferramentas para gerenciamento eficiente de projetos');
-INSERT INTO GS_HABILIDADE (id_usuario, nome, categoria, descricao) VALUES
-(5, 'Marketing Digital', 'Marketing', 'Estratégias e técnicas de marketing na era digital');
+-- Inserir habilidades de exemplo vinculadas a categorias da Alura
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(1, 'Java e Spring Boot', 'programacao', 'java', 'Intermediário');
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(1, 'Python para Data Science', 'data-science', 'python', 'Avançado');
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(2, 'React e TypeScript', 'front-end', 'react', 'Avançado');
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(2, 'UX Design', 'design-ux', 'ux', 'Intermediário');
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(3, 'Machine Learning', 'data-science', 'machine-learning', 'Avançado');
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(4, 'DevOps e Cloud', 'devops', 'cloud', 'Intermediário');
+INSERT INTO GS_HABILIDADE_USUARIO (id_usuario, nome, categoria_slug, subcategoria_slug, nivel) VALUES
+(4, 'Gestão Ágil', 'inovacao-gestao', 'agile', 'Avançado');
 
--- Inserir cursos de exemplo (simulando cursos da Alura)
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Java e Orientação a Objetos', 'Tecnologia', 'https://www.alura.com.br/curso-online-praticando-java-orientacao-objetos-classes-atributos-metodos', 'Aprenda Java do zero com foco em orientação a objetos', 4, 'Iniciante');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Java: trabalhando com Collections', 'Tecnologia', 'https://www.alura.com.br/curso-online-java-collections', 'Domine Collections e APIs do Java', 20, 'Intermediário');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Comunicação Assertiva', 'Soft Skill', 'https://www.alura.com.br/curso-online-comunicacao-assertiva-reduzindo-conflitos-e-frustracaoes', 'Aprenda a se comunicar de forma clara, direta e respeitosa', 6, 'Intermediário');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Oratória: técnicas de apresentação', 'Soft Skill', 'https://www.alura.com.br/curso-online-oratoria-supere-desafios-confianca', 'Desenvolva habilidades de apresentação e oratória', 6, 'Iniciante');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('UX Design: do básico ao avançado', 'Design', 'https://www.alura.com.br/curso-online-figma-conhecendo-a-ferramenta', 'Curso completo de UX Design com projetos práticos', 10, 'Avançado');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Figma: design de interfaces', 'Design', 'https://www.alura.com.br/curso-online-figma', 'Aprenda a criar interfaces profissionais no Figma', 30, 'Intermediário');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Liderança e Gestão de Equipes', 'Soft Skill', 'https://www.alura.com.br/curso-online-lideranca', 'Desenvolva habilidades de liderança e gestão de pessoas', 20, 'Intermediário');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Gestão Ágil: Scrum e Kanban', 'Negócios', 'https://www.alura.com.br/curso-online-gestao-agil', 'Metodologias ágeis para gestão de projetos', 15, 'Iniciante');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Python para Data Science', 'Tecnologia', 'https://www.alura.com.br/curso-online-python-data-science', 'Python aplicado à ciência de dados e análise', 50, 'Intermediário');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('React: desenvolvendo com JavaScript', 'Tecnologia', 'https://www.alura.com.br/curso-online-react', 'Construa interfaces modernas com React', 35, 'Intermediário');
-INSERT INTO GS_CURSO (nome, categoria, link, descricao, duracao_horas, nivel) VALUES
-('Marketing Digital: estratégias e métricas', 'Marketing', 'https://www.alura.com.br/curso-online-marketing-digital', 'Estratégias completas de marketing digital', 25, 'Intermediário');
+-- Inserir inscrições de exemplo em cursos
+INSERT INTO GS_CURSO_INSCRICAO (id_usuario, id_habilidade, curso_slug, curso_nome, tempo_estimado, horas_estudadas, completado) VALUES
+(1, 1, 'java-jre-jdk-compilar-executar', 'Java JRE e JDK: compile e execute o seu programa', 8, 8, 1);
+INSERT INTO GS_CURSO_INSCRICAO (id_usuario, id_habilidade, curso_slug, curso_nome, tempo_estimado, horas_estudadas, completado, data_conclusao) VALUES
+(1, 2, 'python-introducao-orientacao-objetos', 'Python: introdução à orientação a objetos', 6, 6, 1, CURRENT_TIMESTAMP);
+INSERT INTO GS_CURSO_INSCRICAO (id_usuario, id_habilidade, curso_slug, curso_nome, tempo_estimado, horas_estudadas, completado) VALUES
+(2, 3, 'react-function-components', 'React: desenvolvendo com JavaScript', 10, 5, 0);
+INSERT INTO GS_CURSO_INSCRICAO (id_usuario, id_habilidade, curso_slug, curso_nome, tempo_estimado, horas_estudadas, completado) VALUES
+(2, 4, 'ux-o-que-e-experiencia-de-usuario', 'UX: o que é experiência de usuário', 6, 3, 0);
 
 -- Confirmar as transações
 COMMIT;
@@ -129,41 +125,48 @@ COMMIT;
 -- Consultas de Exemplo
 -- =====================================================
 
--- Consulta 1: Listar habilidades com cursos relacionados
+-- Consulta 1: Listar habilidades do usuário com progresso em cursos
 -- SELECT 
 --     h.nome AS habilidade,
---     h.categoria,
---     c.nome AS curso,
---     c.link,
---     c.nivel
--- FROM GS_HABILIDADE h
--- INNER JOIN GS_CURSO c ON h.categoria = c.categoria
--- WHERE h.id_habilidade = 1
--- ORDER BY c.nome;
+--     h.categoria_slug,
+--     h.subcategoria_slug,
+--     h.nivel,
+--     COUNT(ci.id_inscricao) AS total_cursos,
+--     SUM(CASE WHEN ci.completado = 1 THEN 1 ELSE 0 END) AS cursos_completos
+-- FROM GS_HABILIDADE_USUARIO h
+-- LEFT JOIN GS_CURSO_INSCRICAO ci ON h.id_habilidade = ci.id_habilidade
+-- WHERE h.id_usuario = 1
+-- GROUP BY h.id_habilidade, h.nome, h.categoria_slug, h.subcategoria_slug, h.nivel
+-- ORDER BY h.data_criacao DESC;
 
--- Consulta 2: Buscar cursos por categoria de habilidade
+-- Consulta 2: Dashboard do usuário
 -- SELECT 
---     c.nome AS curso,
---     c.link,
---     c.duracao_horas,
---     c.nivel
--- FROM GS_CURSO c
--- WHERE c.categoria = (
---     SELECT categoria 
---     FROM GS_HABILIDADE 
---     WHERE id_habilidade = 1
--- )
--- ORDER BY c.nome;
+--     u.nome,
+--     u.email,
+--     u.xp_total,
+--     COUNT(DISTINCT h.id_habilidade) AS total_habilidades,
+--     COUNT(ci.id_inscricao) AS total_inscricoes,
+--     SUM(CASE WHEN ci.completado = 1 THEN 1 ELSE 0 END) AS cursos_completos,
+--     SUM(ci.horas_estudadas) AS horas_totais
+-- FROM GS_USUARIO u
+-- LEFT JOIN GS_HABILIDADE_USUARIO h ON u.id_usuario = h.id_usuario
+-- LEFT JOIN GS_CURSO_INSCRICAO ci ON u.id_usuario = ci.id_usuario
+-- WHERE u.id_usuario = 1
+-- GROUP BY u.id_usuario, u.nome, u.email, u.xp_total;
 
--- Consulta 3: Listar todas as habilidades com contagem de cursos
+-- Consulta 3: Cursos em progresso do usuário
 -- SELECT 
---     h.nome AS habilidade,
---     h.categoria,
---     COUNT(c.id_curso) AS total_cursos
--- FROM GS_HABILIDADE h
--- LEFT JOIN GS_CURSO c ON h.categoria = c.categoria
--- GROUP BY h.id_habilidade, h.nome, h.categoria
--- ORDER BY total_cursos DESC;
+--     ci.curso_nome,
+--     ci.curso_slug,
+--     ci.tempo_estimado,
+--     ci.horas_estudadas,
+--     ROUND((ci.horas_estudadas / ci.tempo_estimado) * 100, 2) AS progresso_percentual,
+--     h.nome AS habilidade_relacionada,
+--     ci.data_inscricao
+-- FROM GS_CURSO_INSCRICAO ci
+-- LEFT JOIN GS_HABILIDADE_USUARIO h ON ci.id_habilidade = h.id_habilidade
+-- WHERE ci.id_usuario = 1 AND ci.completado = 0
+-- ORDER BY ci.data_inscricao DESC;
 
 -- =====================================================
 -- Fim do Script

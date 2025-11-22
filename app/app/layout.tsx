@@ -1,5 +1,4 @@
 import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
 import './styles.css';
 
 export default function AppLayout({
@@ -11,10 +10,7 @@ export default function AppLayout({
     <div className="app-wrapper">
       <Header />
       <div className="app-container">
-        <Sidebar />
-        <main className="main-content">
-          {children}
-        </main>
+        {children}
       </div>
     </div>
   );

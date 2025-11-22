@@ -8,11 +8,13 @@ public class Usuario {
     private String nome;
     private String email;
     private String passwordHash;
+    private Integer xpTotal;
     private LocalDateTime dataCadastro;
     
     // Construtores
     public Usuario() {
         this.dataCadastro = LocalDateTime.now();
+        this.xpTotal = 0;
     }
     
     public Usuario(String nome, String email, String passwordHash) {
@@ -20,6 +22,7 @@ public class Usuario {
         this.email = email;
         this.passwordHash = passwordHash;
         this.dataCadastro = LocalDateTime.now();
+        this.xpTotal = 0;
     }
     
     // Getters e Setters
@@ -61,6 +64,14 @@ public class Usuario {
     
     public void setDataCadastro(LocalDateTime dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+    
+    public Integer getXpTotal() {
+        return xpTotal;
+    }
+    
+    public void setXpTotal(Integer xpTotal) {
+        this.xpTotal = xpTotal;
     }
 }
 

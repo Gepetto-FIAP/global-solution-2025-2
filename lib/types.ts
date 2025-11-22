@@ -7,6 +7,7 @@ export interface User {
   id: number;
   nome: string;
   email: string;
+  xpTotal?: number;
 }
 
 export interface LoginData {
@@ -30,5 +31,75 @@ export interface AuthResponse {
 export interface ApiError {
   success: false;
   message: string;
+}
+
+// Alura API Types
+export interface AluraCategory {
+  nome: string;
+  slug: string;
+  ordem?: number;
+  cor?: string;
+  corAuxiliar?: string;
+  subcategorias: AluraSubcategory[];
+  numeroCursos?: number;
+}
+
+export interface AluraSubcategory {
+  slug: string;
+  nome: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  description?: string;
+  guides?: string;
+}
+
+export interface AluraCourse {
+  nome: string;
+  slug: string;
+  descricao?: string;
+  tempoEstimado: number;
+  categoria?: string;
+  subcategoria?: string;
+  nivel?: string;
+  url?: string;
+}
+
+// Skills & Courses Types
+export interface Skill {
+  idHabilidade?: number;
+  idUsuario: number;
+  nome: string;
+  categoriaSlug: string;
+  subcategoriaSlug?: string;
+  nivel: 'Iniciante' | 'Intermediário' | 'Avançado' | 'Expert';
+  dataCriacao?: string;
+  totalCursos?: number;
+  cursosCompletos?: number;
+}
+
+export interface CourseEnrollment {
+  idInscricao?: number;
+  idUsuario: number;
+  idHabilidade?: number;
+  cursoSlug: string;
+  cursoNome: string;
+  tempoEstimado: number;
+  horasEstudadas: number;
+  completado: boolean;
+  progressoPercentual?: number;
+  dataInscricao?: string;
+  dataConclusao?: string;
+  habilidadeNome?: string;
+}
+
+export interface DashboardStats {
+  idUsuario: number;
+  nome: string;
+  email: string;
+  xpTotal: number;
+  totalHabilidades: number;
+  totalInscricoes: number;
+  cursosCompletos: number;
+  horasTotais: number;
 }
 

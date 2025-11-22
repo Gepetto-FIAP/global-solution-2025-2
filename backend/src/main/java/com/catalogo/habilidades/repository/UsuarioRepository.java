@@ -13,7 +13,7 @@ public class UsuarioRepository {
      * Busca um usuário por ID
      */
     public Optional<Usuario> findById(Long id) {
-        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM GS_USUARIO WHERE id_usuario = ?";
+        String sql = "SELECT id_usuario, nome, email, password_hash, xp_total, data_cadastro FROM GS_USUARIO WHERE id_usuario = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -36,7 +36,7 @@ public class UsuarioRepository {
      * Busca um usuário por email
      */
     public Optional<Usuario> findByEmail(String email) {
-        String sql = "SELECT id_usuario, nome, email, password_hash, data_cadastro FROM GS_USUARIO WHERE LOWER(email) = ?";
+        String sql = "SELECT id_usuario, nome, email, password_hash, xp_total, data_cadastro FROM GS_USUARIO WHERE LOWER(email) = ?";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -74,7 +74,7 @@ public class UsuarioRepository {
     }
     
     private Usuario insert(Usuario usuario) {
-        String sql = "INSERT INTO GS_USUARIO (nome, email, password_hash, data_cadastro) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO GS_USUARIO (nome, email, password_hash, xp_total, data_cadastro) VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = PersistenceConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, new String[]{"id_usuario"})) {
@@ -82,7 +82,8 @@ public class UsuarioRepository {
             stmt.setString(1, usuario.getNome());
             stmt.setString(2, usuario.getEmail().toLowerCase());
             stmt.setString(3, usuario.getPasswordHash());
-            stmt.setTimestamp(4, Timestamp.valueOf(usuario.getDataCadastro()));
+            stmt.setInt(4, usuario.getXpTotal() != null ? usuario.getXpTotal() : 0);
+            stmt.setTimestamp(5, Timestamp.valueOf(usuario.getDataCadastro()));
             
             int rowsAffected = stmt.executeUpdate();
             
@@ -125,6 +126,7 @@ public class UsuarioRepository {
         usuario.setNome(rs.getString("nome"));
         usuario.setEmail(rs.getString("email"));
         usuario.setPasswordHash(rs.getString("password_hash"));
+        usuario.setXpTotal(rs.getInt("xp_total"));
         
         Timestamp timestamp = rs.getTimestamp("data_cadastro");
         if (timestamp != null) {
@@ -132,6 +134,24 @@ public class UsuarioRepository {
         }
         
         return usuario;
+    }
+    
+    /**
+     * Adiciona XP ao usuário
+     */
+    public void addXp(Long idUsuario, Integer xp) {
+        String sql = "UPDATE GS_USUARIO SET xp_total = xp_total + ? WHERE id_usuario = ?";
+        
+        try (Connection conn = PersistenceConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setInt(1, xp);
+            stmt.setLong(2, idUsuario);
+            
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao adicionar XP ao usuário", e);
+        }
     }
 }
 

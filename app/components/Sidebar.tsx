@@ -1,18 +1,61 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { AluraCategory } from '@/lib/types';
+import { getAluraCategorias } from '@/lib/services/alura.service';
 
-export default function Sidebar() {
-  const [activeCategory, setActiveCategory] = useState('todas');
+interface SidebarProps {
+  onCategorySelect?: (categorySlug: string, categoryName: string) => void;
+  activeCategory?: string;
+}
 
-  const categories = [
-    { id: 'todas', label: 'Todas', icon: '📚', count: 48, color: '#167BF7' },
-    { id: 'tecnologia', label: 'Tecnologia', icon: '💻', count: 15, color: '#00C86F' },
-    { id: 'design', label: 'Design', icon: '🎨', count: 12, color: '#9C27B0' },
-    { id: 'negocios', label: 'Negócios', icon: '📈', count: 14, color: '#FF6B00' },
-    { id: 'softskills', label: 'Soft Skills', icon: '💬', count: 11, color: '#01cafd' },
-  ];
+export default function Sidebar({ onCategorySelect, activeCategory: externalActiveCategory }: SidebarProps) {
+  const [internalActiveCategory, setInternalActiveCategory] = useState('todas');
+  const [categories, setCategories] = useState<AluraCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Use external activeCategory if provided, otherwise use internal state
+  const activeCategory = externalActiveCategory !== undefined ? externalActiveCategory : internalActiveCategory;
+
+  useEffect(() => {
+    async function loadCategories() {
+      setLoading(true);
+      const data = await getAluraCategorias();
+      setCategories(data);
+      setLoading(false);
+    }
+
+    loadCategories();
+  }, []);
+
+  // Função para gerar uma cor padrão baseada no nome se não houver cor definida
+  const getCategoryColor = (category: AluraCategory, index: number) => {
+    if (category.cor) return category.cor;
+    
+    const defaultColors = ['#167BF7', '#00C86F', '#9C27B0', '#FF6B00', '#01cafd', '#ffba05'];
+    return defaultColors[index % defaultColors.length];
+  };
+
+  // Função para gerar um ícone baseado no nome da categoria
+  const getCategoryIcon = (nome: string) => {
+    const lowerNome = nome.toLowerCase();
+    if (lowerNome.includes('mobile')) return '📱';
+    if (lowerNome.includes('programação') || lowerNome.includes('programacao')) return '💻';
+    if (lowerNome.includes('front')) return '🎨';
+    if (lowerNome.includes('data') || lowerNome.includes('dados')) return '📊';
+    if (lowerNome.includes('inteligência') || lowerNome.includes('inteligencia') || lowerNome.includes('ia')) return '🤖';
+    if (lowerNome.includes('devops')) return '⚙️';
+    if (lowerNome.includes('ux') || lowerNome.includes('design')) return '✨';
+    if (lowerNome.includes('inovação') || lowerNome.includes('inovacao') || lowerNome.includes('gestão') || lowerNome.includes('gestao')) return '📈';
+    return '📚';
+  };
+
+  const handleCategoryClick = (slug: string, name: string) => {
+    setInternalActiveCategory(slug);
+    if (onCategorySelect) {
+      onCategorySelect(slug, name);
+    }
+  };
 
   return (
     <aside className="sidebar">
@@ -21,31 +64,60 @@ export default function Sidebar() {
         <p className="sidebar-subtitle">Explore por área</p>
       </div>
       
-      <nav className="sidebar-nav">
-        {categories.map((category) => (
+      {loading ? (
+        <div className="sidebar-loading">
+          <p>Carregando categorias...</p>
+        </div>
+      ) : (
+        <nav className="sidebar-nav">
           <button
-            key={category.id}
-            className={`sidebar-item ${activeCategory === category.id ? 'active' : ''}`}
-            onClick={() => setActiveCategory(category.id)}
+            className={`sidebar-item ${activeCategory === 'todas' ? 'active' : ''}`}
+            onClick={() => handleCategoryClick('todas', 'Todas as Categorias')}
           >
             <span 
               className="item-icon" 
-              style={{ backgroundColor: `${category.color}20` }}
+              style={{ backgroundColor: '#167bf724' }}
             >
-              {category.icon}
+              📚
             </span>
-            <span className="item-label">{category.label}</span>
+            <span className="item-label">Todas</span>
             <span 
               className="item-count"
-              style={{ backgroundColor: `${category.color}20`, color: category.color }}
+              style={{ backgroundColor: '#167bf724', color: '#167BF7' }}
             >
-              {category.count}
+              {categories.reduce((acc, cat) => acc + (cat.numeroCursos || 0), 0)}
             </span>
           </button>
-        ))}
-      </nav>
 
+          {categories.map((category, index) => {
+            const color = getCategoryColor(category, index);
+            const icon = getCategoryIcon(category.nome);
+            const courseCount = category.numeroCursos || 0;
 
+            return (
+              <button
+                key={category.slug}
+                className={`sidebar-item ${activeCategory === category.slug ? 'active' : ''}`}
+                onClick={() => handleCategoryClick(category.slug, category.nome)}
+              >
+                <span 
+                  className="item-icon" 
+                  style={{ backgroundColor: `${color}24` }}
+                >
+                  {icon}
+                </span>
+                <span className="item-label">{category.nome}</span>
+                <span 
+                  className="item-count"
+                  style={{ backgroundColor: `${color}24`, color: color }}
+                >
+                  {courseCount}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
     </aside>
   );
 }
