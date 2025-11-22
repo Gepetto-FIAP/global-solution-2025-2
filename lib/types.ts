@@ -57,11 +57,18 @@ export interface AluraCourse {
   nome: string;
   slug: string;
   descricao?: string;
-  tempoEstimado: number;
+  metadescription?: string;
+  tempoEstimado?: number;
+  duracaoHoras?: number;
+  cargaHoraria?: number;
   categoria?: string;
   subcategoria?: string;
   nivel?: string;
   url?: string;
+  link?: string;
+  quantidadeAulas?: number;
+  quantidadeAlunos?: number;
+  nota?: number;
 }
 
 // Skills & Courses Types

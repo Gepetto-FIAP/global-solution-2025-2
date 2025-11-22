@@ -30,13 +30,31 @@ public class CursoController {
     @Path("/inscrever")
     public Response inscreverNoCurso(CursoInscricaoDTO inscricaoDTO) {
         try {
+            System.out.println("=== RECEBENDO INSCRIÇÃO ===");
+            System.out.println("idUsuario: " + inscricaoDTO.getIdUsuario());
+            System.out.println("cursoSlug: " + inscricaoDTO.getCursoSlug());
+            System.out.println("cursoNome: " + inscricaoDTO.getCursoNome());
+            System.out.println("tempoEstimado: " + inscricaoDTO.getTempoEstimado());
+            System.out.println("horasEstudadas: " + inscricaoDTO.getHorasEstudadas());
+            System.out.println("completado: " + inscricaoDTO.getCompletado());
+            
             CursoInscricaoDTO created = cursoService.inscreverNoCurso(inscricaoDTO);
+            
+            System.out.println("=== INSCRIÇÃO CRIADA COM SUCESSO ===");
+            System.out.println("idInscricao: " + created.getIdInscricao());
+            
             return Response.status(Response.Status.CREATED).entity(created).build();
         } catch (IllegalArgumentException e) {
+            System.err.println("=== ERRO DE VALIDAÇÃO ===");
+            System.err.println(e.getMessage());
+            e.printStackTrace();
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(new ErrorResponse(e.getMessage()))
                     .build();
         } catch (Exception e) {
+            System.err.println("=== ERRO INTERNO ===");
+            System.err.println("Mensagem: " + e.getMessage());
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(new ErrorResponse("Erro ao inscrever no curso: " + e.getMessage()))
                     .build();

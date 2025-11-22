@@ -47,25 +47,30 @@ export default function CourseList({ categoriaSlug, categoriaName, subcategoriaS
     setEnrollingCourse(course.slug);
     
     try {
+      // Garantir que tempoEstimado tem um valor válido
+      const tempoEstimado = course.duracaoHoras || course.cargaHoraria || course.tempoEstimado || 8;
+      
       const enrollment = {
         idUsuario: user.id,
         cursoSlug: course.slug,
         cursoNome: course.nome,
-        tempoEstimado: course.tempoEstimado,
+        tempoEstimado: tempoEstimado,
         horasEstudadas: 0,
         completado: false,
       };
 
+      console.log('Enviando inscrição:', enrollment);
       const result = await enrollInCourse(enrollment);
       
       if (result) {
-        alert(`✅ Inscrição realizada com sucesso!\n\nCurso: ${course.nome}\nDuração: ${course.tempoEstimado}h`);
+        alert(`✅ Inscrição realizada com sucesso!\n\nCurso: ${course.nome}\nDuração: ${tempoEstimado}h`);
       } else {
-        alert('Você já está inscrito neste curso ou ocorreu um erro.');
+        // Verificar se é erro de duplicação
+        alert('⚠️ Você já está inscrito neste curso ou ocorreu um erro. Verifique suas inscrições na página principal.');
       }
     } catch (error) {
       console.error('Erro ao inscrever no curso:', error);
-      alert('Erro ao inscrever no curso. Tente novamente.');
+      alert('❌ Erro ao inscrever no curso. Tente novamente.');
     } finally {
       setEnrollingCourse(null);
     }

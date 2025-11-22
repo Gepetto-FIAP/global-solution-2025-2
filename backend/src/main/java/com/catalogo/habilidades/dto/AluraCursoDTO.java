@@ -1,5 +1,7 @@
 package com.catalogo.habilidades.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class AluraCursoDTO {
     
     private String nome;
@@ -7,6 +9,11 @@ public class AluraCursoDTO {
     private String descricao;
     private String metadescription;
     private Integer tempoEstimado;
+    
+    // Alias para compatibilidade com o frontend
+    @JsonProperty("duracaoHoras")
+    private Integer duracaoHoras;
+    
     private Integer cargaHoraria;
     private String categoria;
     private String subcategoria;
@@ -23,6 +30,7 @@ public class AluraCursoDTO {
         this.nome = nome;
         this.slug = slug;
         this.tempoEstimado = tempoEstimado;
+        this.duracaoHoras = tempoEstimado; // Sincronizar
     }
     
     // Getters e Setters
@@ -64,6 +72,18 @@ public class AluraCursoDTO {
     
     public void setTempoEstimado(Integer tempoEstimado) {
         this.tempoEstimado = tempoEstimado;
+        this.duracaoHoras = tempoEstimado; // Sincronizar
+    }
+    
+    public Integer getDuracaoHoras() {
+        return duracaoHoras != null ? duracaoHoras : tempoEstimado;
+    }
+    
+    public void setDuracaoHoras(Integer duracaoHoras) {
+        this.duracaoHoras = duracaoHoras;
+        if (this.tempoEstimado == null) {
+            this.tempoEstimado = duracaoHoras;
+        }
     }
     
     public Integer getCargaHoraria() {

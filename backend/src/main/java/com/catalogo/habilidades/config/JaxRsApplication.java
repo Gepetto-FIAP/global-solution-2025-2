@@ -28,6 +28,7 @@ public class JaxRsApplication extends Application {
         
         // Registrar Jackson para serialização JSON
         classes.add(JacksonFeature.class);
+        classes.add(JacksonConfig.class); // Configuração customizada do Jackson
         
         return classes;
     }
