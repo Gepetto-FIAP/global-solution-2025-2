@@ -24,10 +24,11 @@ Criar um sistema simples onde o usuário possa:
 Antes de começar, certifique-se de ter instalado:
 
 - **Node.js** 18+ e npm
-- **Java** 17 ou superior
-- **Maven** 3.6+
+- **Java** 21 LTS ou superior
+- **Maven** 3.9.9+
 - **Oracle Database** 12c ou superior (com acesso configurado)
 - **Git**
+- **PowerShell** 5.1+ (Windows) ou **Bash** (Linux/Mac)
 
 ### 1️⃣ Configuração do Banco de Dados
 
@@ -68,41 +69,40 @@ Crie um arquivo `.env.local` na **raiz do projeto**:
 NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
-#### 2.2. Backend (Java Spring Boot)
+#### 2.2. Backend (Java)
 
-O backend precisa das seguintes variáveis de ambiente. Você pode configurá-las de duas formas:
+O backend precisa das seguintes variáveis de ambiente:
 
-**Opção A: Usando o arquivo `.env.local` (recomendado)**
-
-Adicione ao mesmo arquivo `.env.local` na raiz do projeto:
+**Criar arquivo `.env.local` na raiz do projeto:**
 
 ```env
-# Oracle Database
-ORACLE_USER=seu_usuario
+# Frontend - URL base do backend Java REST API
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# Backend - Oracle Database
+ORACLE_USER=seu_user
 ORACLE_PASSWORD=sua_senha
 ORACLE_CONNECT_STRING=oracle.fiap.com.br:1521/orcl
 
-# JWT Secret (chave secreta para assinar tokens JWT)
+# Backend - JWT Secret (chave secreta para assinar tokens JWT)
 JWT_SECRET=sua-chave-secreta-super-forte-altere-em-producao
+JWT_EXPIRATION=604800000
 ```
 
-**Opção B: Exportar manualmente no terminal**
+**Formato da Connection String:**
+- Para service name (com `/`): `host:port/service_name`
+- Para SID (com `:`): `host:port:sid`
 
-```bash
-export ORACLE_USER=seu_usuario
-export ORACLE_PASSWORD=sua_senha
-export ORACLE_CONNECT_STRING=oracle.fiap.com.br:1521/orcl
-export JWT_SECRET=sua-chave-secreta-super-forte-altere-em-producao
+**Exemplo FIAP:**
+```env
+ORACLE_USER=seu_user
+ORACLE_PASSWORD=sua_senha
+ORACLE_CONNECT_STRING=oracle.fiap.com.br:1521/orcl
 ```
 
-**Importante:** 
-- O formato de `ORACLE_CONNECT_STRING` deve ser `host:port/service_name` ou `host:port:sid`
-- Para service name (com `/`), use: `host:port/service_name`
-- Para SID (com `:`), use: `host:port:sid`
+📖 Para mais detalhes, consulte `docs/env_variables.md`
 
-📖 Para mais detalhes, consulte `docs/ENV_VARIABLES.md`
-
-### 3️⃣ Executar o Backend (Java Spring Boot)
+### 3️⃣ Executar o Backend (Java)
 
 #### 3.1. Navegar para o diretório do backend
 
@@ -110,48 +110,89 @@ export JWT_SECRET=sua-chave-secreta-super-forte-altere-em-producao
 cd backend
 ```
 
-#### 3.2. Executar usando o script (recomendado)
+#### 3.2. Executar usando PowerShell (Windows) - Recomendado ✅
 
-O script `run.sh` carrega automaticamente as variáveis do `.env.local`:
+O script `run.ps1` carrega automaticamente as variáveis do `.env.local`:
 
-```bash
-./run.sh
+```powershell
+.\run.ps1
 ```
 
-**Nota:** Se o script não tiver permissão de execução:
+**Se houver erro de ExecutionPolicy:**
+
+```powershell
+# Permitir execução apenas para esta sessão
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
+# Executar novamente
+.\run.ps1
+```
+
+**O que o script faz:**
+1. 📂 Carrega automaticamente as variáveis do arquivo `.env.local` da raiz do projeto
+2. ✅ Verifica se o JAR já foi compilado
+3. 🔨 Se não existir, compila com `mvn clean package`
+4. 🚀 Executa o JAR com as variáveis de ambiente configuradas
+5. ⚙️ Configura a porta 8080 (ou variável PORT se definida)
+
+#### 3.3. Executar usando Bash (Linux/Mac)
 
 ```bash
+# Dar permissão de execução (primeira vez)
 chmod +x run.sh
+
+# Executar
 ./run.sh
 ```
 
-#### 3.3. Executar manualmente com Maven
+#### 3.4. Executar manualmente (alternativa)
 
-Se preferir executar manualmente:
+Se preferir executar manualmente sem os scripts:
 
+**Windows (PowerShell):**
+```powershell
+# Carregar variáveis do .env.local
+Get-Content ..\.env.local | ForEach-Object {
+    if ($_ -match '^([^=]+)=(.+)$') {
+        [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+    }
+}
+
+# Compilar (se necessário)
+mvn clean package -DskipTests
+
+# Executar
+java -jar target/habilidades-api.jar
+```
+
+**Linux/Mac (Bash):**
 ```bash
-# Certifique-se de que as variáveis de ambiente estão exportadas
+# Carregar variáveis do .env.local
 export $(grep -v '^#' ../.env.local | grep -v '^$' | xargs)
 
-# Executar o Spring Boot
-mvn spring-boot:run
+# Compilar (se necessário)
+mvn clean package -DskipTests
+
+# Executar
+java -jar target/habilidades-api.jar
 ```
 
-#### 3.4. Verificar se o Backend está rodando
+#### 3.5. Verificar se o Backend está rodando
 
 O backend deve iniciar na porta **8080**. Você verá uma mensagem similar a:
 
 ```
-Started HabilidadesApplication in X.XXX seconds
+🚀 Servidor HTTP iniciado em: http://0.0.0.0:8080/
+Pressione Ctrl+C para parar o servidor
 ```
 
 Teste o endpoint de saúde:
 
 ```bash
-curl http://localhost:8080/api/auth/register
+curl http://localhost:8080/api/auth/login
 ```
 
-Se retornar um erro de validação (esperado), significa que o servidor está funcionando! ✅
+Se retornar um erro de validação (esperado sem body), significa que o servidor está funcionando! ✅
 
 ### 4️⃣ Executar o Frontend (Next.js)
 
@@ -296,24 +337,28 @@ globalsolution2/
 ## 🛠️ Stack Tecnológica
 
 ### Frontend
-- **Next.js** 16+ (React 19)
-- **TypeScript**
+- **Next.js** 16.0.3 (React 19.2.0)
+- **TypeScript** 5+
 - **CSS Modules**
-- **Tailwind CSS**
+- **React Router**
 
 ### Backend
-- **Java** 17
-- **Spring Boot** 3.2.0
-- **Spring Data JPA**
-- **Spring Security** (JWT)
-- **Maven**
+- **Java** 21 LTS
+- **Jersey** 3.1.3 (JAX-RS 3.1.0)
+- **Grizzly HTTP Server** 4.0.0 (embedded)
+- **Maven** 3.9.9
+- **HikariCP** 5.0.1 (connection pooling)
 
 ### Banco de Dados
-- **Oracle Database** 12c+
+- **Oracle Database** 12c+ (FIAP: oracle.fiap.com.br:1521/orcl)
 
-### Autenticação
-- **JWT** (JSON Web Tokens)
-- **BCrypt** para hash de senhas
+### Autenticação & Segurança
+- **JWT** (jjwt 0.12.3) - JSON Web Tokens
+- **BCrypt** (jbcrypt 0.4) - Hash de senhas
+
+### Deployment
+- **Vercel** (Frontend - Next.js)
+- **Azure App Service** (Backend - Java JAR)
 
 ---
 
@@ -331,7 +376,15 @@ globalsolution2/
 
 ### Backend não conecta ao Oracle
 
-1. Verifique se as variáveis de ambiente estão exportadas:
+1. Verifique se as variáveis de ambiente estão carregadas:
+   
+   **Windows (PowerShell):**
+   ```powershell
+   $env:ORACLE_USER
+   $env:ORACLE_CONNECT_STRING
+   ```
+   
+   **Linux/Mac (Bash):**
    ```bash
    echo $ORACLE_USER
    echo $ORACLE_CONNECT_STRING
@@ -346,29 +399,71 @@ globalsolution2/
    sqlplus $ORACLE_USER/$ORACLE_PASSWORD@$ORACLE_CONNECT_STRING
    ```
 
-### Frontend não conecta ao Backend
+### Erro ao executar run.ps1 no Windows
 
-1. Verifique se o backend está rodando na porta 8080:
-   ```bash
-   curl http://localhost:8080/api/auth/register
-   ```
+**Erro:** "run.ps1 cannot be loaded because running scripts is disabled on this system"
 
-2. Verifique a variável `NEXT_PUBLIC_API_URL` no `.env.local`
+**Solução:**
+```powershell
+# Permitir execução de scripts apenas para esta sessão
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 
-3. Verifique o console do navegador para erros de CORS
+# Executar novamente
+.\run.ps1
+```
 
-### Erro de compilação Java
+**Solução permanente (não recomendada):**
+```powershell
+# Execute como Administrador
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Backend não compila (erro Maven)
 
 1. Verifique a versão do Java:
    ```bash
-   java -version  # Deve ser 17 ou superior
+   java -version  # Deve ser 21 ou superior
    ```
 
-2. Limpe e recompile:
+2. Verifique a versão do Maven:
+   ```bash
+   mvn -version  # Deve ser 3.9+
+   ```
+
+3. Limpe e recompile:
    ```bash
    cd backend
    mvn clean install
    ```
+
+### Frontend não conecta ao Backend
+
+1. Verifique se o backend está rodando na porta 8080:
+   ```bash
+   curl http://localhost:8080/api/auth/login
+   ```
+
+2. Verifique a variável `NEXT_PUBLIC_API_URL` no `.env.local`:
+   ```env
+   NEXT_PUBLIC_API_URL=http://localhost:8080
+   ```
+
+3. Verifique o console do navegador (F12) para erros de CORS
+
+### Pool de conexões Oracle fechado (ORA-17008)
+
+Se você ver o erro "Closed Connection", reinicie o backend:
+
+**Windows:**
+```powershell
+# Pare com Ctrl+C e execute novamente
+.\run.ps1
+```
+
+**Linux/Mac:**
+```bash
+./run.sh
+```
 
 ---
 
